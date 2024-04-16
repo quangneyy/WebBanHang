@@ -1,76 +1,85 @@
 var express = require('express');
 var router = express.Router();
-var productModel = require('../schemas/product')
+var categoryModel = require('../schemas/category')
 var Res = require('../helpers/ResRender');
 var checkLogin = require('../middlewares/checkLogin');
 var checkRole = require('../middlewares/checkRole');
 var Query = require('../helpers/QueryHandler');
+require('express-async-errors')
 
-const populateFields = [
-  { path: "category", select: "_id name" },
-  { path: "published", select: "_id name" },
-];
+const populateFields = [{ path: "category", select: "_id name" }];
 
+router.get("/", async function (req, res, next) {
+  let StringArray = ["name"];
+  let objQueries = Query.ProcessQueries(req, StringArray);
+  let sortObj = Query.ProcessSortQuery(req);
+  let { page, limit } = Query.GetPageAndLimit(req);
+  try {
+    var categorys = await categoryModel
+      .find(objQueries)
+      .populate(populateFields)
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .sort(sortObj);
+    res.send(categorys);
+  } catch (error) {
+    next(error);
+  }
+});
 
 router.get("/", async function (req, res, next) {
   let StringArray = ["name"];
   let objQueries = Query.ProcessQueries(req,StringArray);
   let sortObj = Query.ProcessSortQuery(req);
   let { page, limit } = Query.GetPageAndLimit(req);
-
   try {
-    var products = await productModel
+    var categorys = await categoryModel
       .find(objQueries)
       .populate(populateFields)
-      .lean()
       .skip((page - 1) * limit)
       .limit(limit)
       .sort(sortObj);
-
-    res.send(products);
+    res.send(categorys);
   } catch (error) {
     next(error);
   }
 });
 
 router.get('/:id', async function (req, res, next) {
-  var product = await productModel.find({ _id: req.params.id });
-  Res.ResRend(res, true, product);
+  var category = await categoryModel.find({ _id: req.params.id });
+  Res.ResRend(res, true, category);
 });
 
 router.post('/', checkLogin, checkRole("ADMIN"), async function (req, res, next) {
   try {
-    var newproduct = new productModel({
-      name: req.body.name,
-      description: req.body.description,
-      category: req.body.category,
-      images: req.body.images,
+    var newcategory = new categoryModel({
+      name: req.body.name
     })
-    await newproduct.save();
-    Res.ResRend(res, true, newproduct);
+    await newcategory.save();
+    Res.ResRend(res, true, newcategory);
+  } catch (error) {
+    Res.ResRend(res, false, error);
+  }
+});
+router.put('/:id', checkLogin, checkRole("ADMIN"), async function (req, res, next) {
+  try {
+    var category = await categoryModel.findByIdAndUpdate(req.params.id,
+      req.body, {
+      new: true
+    });
+    Res.ResRend(res, true, category);
   } catch (error) {
     Res.ResRend(res, false, error);
   }
 });
 
-router.put('/:id', checkLogin, checkRole("ADMIN"), async function (req, res, next) {
+router.delete('/:id', checkLogin, checkRole("ADMIN"), async function (req, res, next) {
   try {
-    var product = await productModel.findByIdAndUpdate(req.params.id,
-      req.body, {
-      new: true
-    });
-    Res.ResRend(res, true, product);
-  } catch (error) {
-    Res.ResRend(res, false, error);
-  }
-});
-router.delete('/:id',checkLogin, checkRole("ADMIN"), async function (req, res, next) {
-  try {
-    var product = await productModel.findByIdAndUpdate(req.params.id,
+    var category = await categoryModel.findByIdAndUpdate(req.params.id,
       { isDeleted: true }, {
       new: true
     });
-    Res.ResRend(res, true, product);
+    Res.ResRend(res, true, category);
   } catch (error) {
     Res.ResRend(res, false, error);
   }

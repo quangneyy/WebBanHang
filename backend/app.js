@@ -4,6 +4,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var mongoose = require('mongoose');
+var config = require('../backend/configs/config');
 
 
 var app = express();
@@ -18,7 +19,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-mongoose.connect("mongodb://localhost:27017/WebBanHang").then(
+mongoose.connect(config.SERVER).then(
   function () {
     console.log("connect");
   }
@@ -46,7 +47,7 @@ app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.send({
     success: false,
-    message: err.message
+    message: err.messageE
   });
 });
 

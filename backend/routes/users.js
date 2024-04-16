@@ -5,51 +5,32 @@ var Res = require('../helpers/ResRender');
 var { validationResult } = require('express-validator');
 var checkUser = require('../validators/user')
 var checkLogin = require('../middlewares/checkLogin');
+var checkRole = require('../middlewares/checkRole');
+var checkLogin = require('../middlewares/checkLogin');
+var checkRole = require('../middlewares/checkRole');
+var ValidateError = require('../errors/ValidateErrors')
+var Query = require('../helpers/QueryHandler');
+require('express-async-errors')
 
-router.get('/',checkLogin, async function (req, res, next) {
-  let sortObj = {};
-  let exclude = ["sort", "page", "limit"];
-  let StringArray = ["username", "email"];
-  let objQueries = JSON.parse(JSON.stringify(req.query));
-  for (const [key, value] of Object.entries(objQueries)) {
-    if (exclude.includes(key)) {
-      delete objQueries[key];
-    } else {
-      if (StringArray.includes(key)) {
-        objQueries[key] = new RegExp(value.replace(',', '|'), 'i');
-      }
-    }
-  }
-  objQueries.isDeleted = false;
-  if (req.query.sort) {
-    if (req.query.sort.startsWith('-')) {
-      let field = req.query.sort;
-      field = field.substring(1, field.length);
-      sortObj[field] = -1;
-    } else {
-      let field = req.query.sort;
-      console.log(req.query.sort);
-      sortObj[field] = 1;
-    }
-  }
-  let page = req.query.page ? req.query.page : 1;
-  let limit = req.query.limit ? req.query.limit : 5;
-  var users = await userModel.find(
-    objQueries)
-    .skip((page - 1) * limit).limit(limit)
-    .sort(sortObj);
-  res.send(users);
-});
-
-router.get('/:id', async function (req, res, next) {
+router.get('/', checkLogin, checkRole("ADMIN"), async function (req, res, next) {
+  let StringArray = ["name"];
+  let objQueries = Query.ProcessQueries(req,StringArray);
+  let sortObj = Query.ProcessSortQuery(req);
+  let { page, limit } = Query.GetPageAndLimit(req);
   try {
-    var user = await userModel.find({ _id: req.params.id });
-    Res.ResRend(res, true, user);
+    var users = await userModel
+      .find(objQueries)
+      .populate(populateFields)
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .sort(sortObj);
+    res.send(users);
   } catch (error) {
-    Res.ResRend(res, false, error);
+    next(error);
   }
 });
-router.get('/:id', async function (req, res, next) {
+
+router.get('/:id', checkLogin, checkRole("ADMIN"), async function (req, res, next) {
   try {
     let user = await userModel.find({ _id: req.params.id }).exec();
     Res.ResRend(res, true, user)
@@ -58,10 +39,10 @@ router.get('/:id', async function (req, res, next) {
   }
 });
 
-router.post('/', checkUser(), async function (req, res, next) {//3
+router.post('/',checkLogin, checkRole("ADMIN"), checkUser(), async function (req, res, next) {//3
   var result = validationResult(req);
   if (result.errors.length > 0) {
-    Res.ResRend(res, false, result.errors);
+    throw new ValidateError(result)
     return;
   }
   try {
@@ -76,7 +57,7 @@ router.post('/', checkUser(), async function (req, res, next) {//3
     Res.ResRend(res, false, error)
   }
 });
-router.put('/:id', async function (req, res, next) {
+router.put('/:id',checkLogin, checkRole("ADMIN"), async function (req, res, next) {
   try {
     let user = await userModel.findByIdAndUpdate
       (req.params.id, req.body).exec()
@@ -85,9 +66,7 @@ router.put('/:id', async function (req, res, next) {
     Res.ResRend(res, false, error)
   }
 });
-
-
-router.delete('/:id', async function (req, res, next) {
+router.delete('/:id',checkLogin, checkRole("ADMIN"), async function (req, res, next) {
   try {
     let user = await userModel.findByIdAndUpdate
       (req.params.id, {

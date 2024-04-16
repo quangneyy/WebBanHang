@@ -16,10 +16,10 @@ let options = {
 }
 
 let Notifies = {
-    NOTI_EMAIL: "email phai dung dinh dang",
-    NOTI_USERNAME: "username phai dai tu %d den %d ky tu",
-    NOTI_PASSWORD: "password phai dai it nhat %d ky tu, trong do co it nhat %d so, %d chu hoa, %d chu thuong, %d ki tu",
-    NOTI_ROLE: "role hop le"
+    NOTI_EMAIL: "Email phải đúng định dạng",
+    NOTI_USERNAME: "Username phải dài từ %d đến %d ký tự",
+    NOTI_PASSWORD: "Password phải dài ít nhất %d ký tự, trong đó ít nhất %d số, %d chữ hoa, %d chữ thuong, %d kí tự",
+    NOTI_ROLE: "Role không hợp lệ"
 }
 
 

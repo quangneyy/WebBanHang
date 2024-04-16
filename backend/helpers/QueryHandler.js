@@ -1,8 +1,6 @@
 module.exports = {
-    ProcessQueries: function (req) {
+    ProcessQueries: function (req, StringArray, NumberArray ) {
       let exclude = ["sort", "page", "limit"];
-      let StringArray = ["author", "name"];
-      let NumberArray = ["year"];
       let objQueries = JSON.parse(JSON.stringify(req.query));
   
       for (const [key, value] of Object.entries(objQueries)) {
