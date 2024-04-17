@@ -11,24 +11,6 @@ const populateFields = [{ path: "category", select: "_id name" }];
 
 router.get("/", async function (req, res, next) {
   let StringArray = ["name"];
-  let objQueries = Query.ProcessQueries(req, StringArray);
-  let sortObj = Query.ProcessSortQuery(req);
-  let { page, limit } = Query.GetPageAndLimit(req);
-  try {
-    var categorys = await categoryModel
-      .find(objQueries)
-      .populate(populateFields)
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .sort(sortObj);
-    res.send(categorys);
-  } catch (error) {
-    next(error);
-  }
-});
-
-router.get("/", async function (req, res, next) {
-  let StringArray = ["name"];
   let objQueries = Query.ProcessQueries(req,StringArray);
   let sortObj = Query.ProcessSortQuery(req);
   let { page, limit } = Query.GetPageAndLimit(req);
@@ -46,7 +28,7 @@ router.get("/", async function (req, res, next) {
 });
 
 router.get('/:id', async function (req, res, next) {
-  var category = await categoryModel.find({ _id: req.params.id });
+  var category = await categoryModel.find({ _id: req.params.id }).populate(populateFields);
   Res.ResRend(res, true, category);
 });
 
