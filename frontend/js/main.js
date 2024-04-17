@@ -1,3 +1,21 @@
+
+// Lấy dữ liệu từ localStorage
+const productsFromLocalStorage = localStorage.getItem('products');
+
+// Kiểm tra xem dữ liệu có tồn tại hay không
+if (productsFromLocalStorage) {
+    // Parse dữ liệu JSON thành mảng các đối tượng
+    const products = JSON.parse(productsFromLocalStorage);
+
+    // Lọc các sản phẩm không bị xóa
+    const productAll = products.filter(item => item.isDeleted === false);
+
+    // Sử dụng mảng productAll ở đây cho các mục đích tiếp theo
+} else {
+    console.error('No products data found in localStorage.');
+}
+
+
 // Doi sang dinh dang tien VND
 function vnd(price) {
     return price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
@@ -51,14 +69,16 @@ function detailProduct(index) {
     let modal = document.querySelector('.modal.product-detail');
     let products = JSON.parse(localStorage.getItem('products'));
     event.preventDefault();
-    let infoProduct = products.find(sp => {
-        return sp.id === index;
-    })
+    let infoProduct = products.find(sp => sp._id === index);
+
+    // Trích xuất đường dẫn hình ảnh từ mảng images
+    let imageUrl = infoProduct.images.length > 0 ? infoProduct.images[0].url : ''; 
+
     let modalHtml = `<div class="modal-header">
-    <img class="product-image" src="${infoProduct.img}" alt="">
+    <img class="product-image" src="${imageUrl}" alt="">
     </div>
     <div class="modal-body">
-        <h2 class="product-title">${infoProduct.title}</h2>
+        <h2 class="product-title">${infoProduct.name}</h2>
         <div class="product-control">
             <div class="priceBox">
                 <span class="current-price">${vnd(infoProduct.price)}</span>
@@ -69,7 +89,7 @@ function detailProduct(index) {
                 <input class="plus is-form" type="button" value="+" onclick="increasingNumber(this)">
             </div>
         </div>
-        <p class="product-description">${infoProduct.desc}</p>
+        <p class="product-description">${infoProduct.description}</p>
     </div>
     <div class="notebox">
             <p class="notebox-title">Ghi chú</p>
@@ -81,7 +101,7 @@ function detailProduct(index) {
             <span class="price">${vnd(infoProduct.price)}</span>
         </div>
         <div class="modal-footer-control">
-            <button class="button-dathangngay" data-product="${infoProduct.id}">Đặt hàng ngay</button>
+            <button class="button-dathangngay" data-product="${infoProduct._id}">Đặt hàng ngay</button>
             <button class="button-dat" id="add-cart" onclick="animationCart()"><i class="fa-light fa-basket-shopping"></i></button>
         </div>
     </div>`;
@@ -102,7 +122,7 @@ function detailProduct(index) {
     let productbtn = document.querySelector('.button-dat');
     productbtn.addEventListener('click', (e) => {
         if (localStorage.getItem('currentuser')) {
-            addCart(infoProduct.id);
+            addCart(infoProduct._id);
         } else {
             toast({ title: 'Warning', message: 'Chưa đăng nhập tài khoản !', type: 'warning', duration: 3000 });
         }
@@ -111,6 +131,8 @@ function detailProduct(index) {
     // Mua ngay san pham
     dathangngay();
 }
+
+
 
 function animationCart() {
     document.querySelector(".count-product-cart").style.animation = "slidein ease 1s"
@@ -825,43 +847,47 @@ window.addEventListener("scroll", () => {
 // Page
 function renderProducts(showProduct) {
     let productHtml = '';
-    if(showProduct.length == 0) {
+    if (showProduct.length === 0) {
+        console.log(showProduct.length);
         document.getElementById("home-title").style.display = "none";
-        productHtml = `<div class="no-result"><div class="no-result-h">Tìm kiếm không có kết quả</div><div class="no-result-p">Xin lỗi, chúng tôi không thể tìm được kết quả hợp với tìm kiếm của bạn</div><div class="no-result-i"><i class="fa-light fa-face-sad-cry"></i></div></div>`;
+        productHtml = `<div class="no-result">
+            <div class="no-result-h">Tìm kiếm không có kết quả</div>
+            <div class="no-result-p">Xin lỗi, chúng tôi không thể tìm được kết quả hợp với tìm kiếm của bạn</div>
+            <div class="no-result-i"><i class="fa-light fa-face-sad-cry"></i></div>
+        </div>`;
     } else {
         document.getElementById("home-title").style.display = "block";
         showProduct.forEach((product) => {
             productHtml += `<div class="col-product">
-            <article class="card-product" >
-                <div class="card-header">
-                    <a href="#" class="card-image-link" onclick="detailProduct(${product.id})">
-                    <img class="card-image" src="${product.img}" alt="${product.title}">
-                    </a>
-                </div>
-                <div class="food-info">
-                    <div class="card-content">
-                        <div class="card-title">
-                            <a href="#" class="card-title-link" onclick="detailProduct(${product.id})">${product.title}</a>
+                <article class="card-product" >
+                    <div class="card-header">
+                        <a href="#" class="card-image-link" onclick="detailProduct('${product._id}')">
+                            <img class="card-image" src="${product.images[0].url}" alt="${product.name}">
+                        </a>
+                    </div>
+                    <div class="food-info">
+                        <div class="card-content">
+                            <div class="card-title">
+                                <a href="#" class="card-title-link" onclick="detailProduct('${product._id}')">${product.name}</a>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="product-price">
+                                <span class="current-price">${vnd(product.price)}</span>
+                            </div>
+                            <div class="product-buy">
+                                <button onclick="detailProduct('${product._id}')" class="card-button order-item"><i class="fa-regular fa-cart-shopping-fast"></i> Đặt món</button>
+                            </div> 
                         </div>
                     </div>
-                    <div class="card-footer">
-                        <div class="product-price">
-                            <span class="current-price">${vnd(product.price)}</span>
-                        </div>
-                    <div class="product-buy">
-                        <button onclick="detailProduct(${product.id})" class="card-button order-item"><i class="fa-regular fa-cart-shopping-fast"></i> Đặt món</button>
-                    </div> 
-                </div>
-                </div>
-            </article>
-        </div>`;
+                </article>
+            </div>`;
         });
     }
     document.getElementById('home-products').innerHTML = productHtml;
 }
 
-// Find Product
-var productAll = JSON.parse(localStorage.getItem('products')).filter(item => item.status == 1);
+
 function searchProducts(mode) {
     let valeSearchInput = document.querySelector('.form-search-input').value;
     let valueCategory = document.getElementById("advanced-search-category-select").value;
@@ -920,10 +946,13 @@ function displayList(productAll, perPage, currentPage) {
 }
 
 function showHomeProduct(products) {
-    let productAll = products.filter(item => item.status == 1)
+    // Lọc các sản phẩm không bị xóa
+    let productAll = products.filter(item => !item.isDeleted);
+    // Hiển thị danh sách sản phẩm và thiết lập phân trang
     displayList(productAll, perPage, currentPage);
     setupPagination(productAll, perPage, currentPage);
 }
+
 
 window.onload = showHomeProduct(JSON.parse(localStorage.getItem('products')))
 
