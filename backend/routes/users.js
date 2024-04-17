@@ -10,17 +10,16 @@ var checkLogin = require('../middlewares/checkLogin');
 var checkRole = require('../middlewares/checkRole');
 var ValidateError = require('../errors/ValidateErrors')
 var Query = require('../helpers/QueryHandler');
-require('express-async-errors')
+const bcrypt = require('bcrypt');
 
 router.get('/', checkLogin, checkRole("ADMIN"), async function (req, res, next) {
-  let StringArray = ["name"];
-  let objQueries = Query.ProcessQueries(req,StringArray);
+  let StringArray = ["username"];
+  let objQueries = Query.ProcessQueriesUser(req,StringArray);
   let sortObj = Query.ProcessSortQuery(req);
   let { page, limit } = Query.GetPageAndLimit(req);
   try {
     var users = await userModel
       .find(objQueries)
-      .populate(populateFields)
       .skip((page - 1) * limit)
       .limit(limit)
       .sort(sortObj);
@@ -57,13 +56,13 @@ router.post('/',checkLogin, checkRole("ADMIN"), checkUser(), async function (req
     Res.ResRend(res, false, error)
   }
 });
-router.put('/:id',checkLogin, checkRole("ADMIN"), async function (req, res, next) {
+router.put('/:id', checkLogin, async function (req, res, next) {
   try {
-    let user = await userModel.findByIdAndUpdate
-      (req.params.id, req.body).exec()
+    let user = await userModel.findByIdAndUpdate(req.params.id, req.body, { new: true }).exec();
+    await user.save(); 
     Res.ResRend(res, true, user);
   } catch (error) {
-    Res.ResRend(res, false, error)
+    Res.ResRend(res, false, error);
   }
 });
 router.delete('/:id',checkLogin, checkRole("ADMIN"), async function (req, res, next) {

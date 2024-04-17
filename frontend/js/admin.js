@@ -1,12 +1,38 @@
-function checkLogin() {
-    let currentUser = JSON.parse(localStorage.getItem("currentuser"));
-    if(currentUser == null || currentUser.userType == 0) {
-        document.querySelector("body").innerHTML = `<div class="access-denied-section">
-            <img class="access-denied-img" src="./assets/img/access-denied.webp" alt="">
-        </div>`
-    } else {
-        document.getElementById("name-acc").innerHTML = currentUser.fullname;
+async function checkLogin() {
+    try {
+        const response = await fetch('http://localhost:3000/api/v1/auth/me', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${getToken()}`
+            }
+        });
+
+        if (response.ok) {
+            const userData = await response.json();
+            const currentUser = userData.data;
+            if (currentUser.role.includes('ADMIN')) {
+                document.getElementById("name-acc").innerHTML = currentUser.username;
+            } else {
+                document.querySelector("body").innerHTML = `<div class="access-denied-section">
+                    <img class="access-denied-img" src="./assets/img/access-denied.webp" alt="">
+                </div>`;
+            }
+        } else {
+            console.error('Error fetching user data:', response.statusText);
+        }
+    } catch (error) {
+        console.error('Error:', error);
     }
+}
+function getToken() {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+        const [name, value] = cookie.split('=');
+        if (name.trim() === 'kento') {
+            return value;
+        }
+    }
+    return '';
 }
 window.onload = checkLogin();
 
@@ -40,7 +66,6 @@ for(let i = 0; i < sidebars.length; i++) {
 }
 
 const closeBtn = document.querySelectorAll('.section');
-console.log(closeBtn[0])
 for(let i=0;i<closeBtn.length;i++){
     closeBtn[i].addEventListener('click',(e) => {
         sidebar.classList.add("open");
@@ -906,6 +931,6 @@ addAccount.addEventListener("click", (e) => {
 
 document.getElementById("logout-acc").addEventListener('click', (e) => {
     e.preventDefault();
-    localStorage.removeItem("currentuser");
+    document.cookie = 'kento=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
     window.location = "/";
 })

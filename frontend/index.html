@@ -193,18 +193,17 @@
                     <div class="main-account-body-col">
                         <form action="" class="info-user">
                             <div class="form-group">
-                                <label for="infoname" class="form-label">Họ và tên</label>
-                                <input class="form-control" type="text" name="infoname" id="infoname" placeholder="">
+                                <label for="infousername" class="form-label">Tên tài khoản</label>
+                                <input class="form-control" type="text" name="infousername" id="infousername" disabled="true">
                             </div>
                             <div class="form-group">
                                 <label for="infophone" class="form-label">Số điện thoại</label>
-                                <input class="form-control" type="text" name="infophone" id="infophone" disabled="true"
-                                    placeholder="">
+                                <input class="form-control" type="text" name="infophone" id="infophone"  placeholder="Thêm số điện thoại của bạn">
+                                <span class="inforphone-error form-message"></span>
                             </div>
                             <div class="form-group">
                                 <label for="infoemail" class="form-label">Email</label>
-                                <input class="form-control" type="email" name="infoemail" id="infoemail"
-                                    placeholder="Thêm địa chỉ email của bạn">
+                                <input class="form-control" type="email" name="infoemail" id="infoemail">
                                 <span class="inforemail-error form-message"></span>
                             </div>
                             <div class="form-group">
@@ -239,7 +238,7 @@
                     <div class="main-account-body-row">
                         <div>
                             <button id="save-info-user" onclick="changeInformation()"><i
-                                    class="fa-regular fa-floppy-disk"></i> Lưu thay đổi</button>
+                                class="fa-regular fa-floppy-disk"></i> Lưu thay đổi</button>
                         </div>
                         <div>
                             <button id="save-password" onclick="changePassword()"><i class="fa-regular fa-key"></i> Đổi
@@ -279,16 +278,16 @@
                         tôi </p>
                     <form action="" class="signup-form">
                         <div class="form-group">
-                            <label for="fullname" class="form-label">Tên đầy đủ</label>
-                            <input id="fullname" name="fullname" type="text" placeholder="VD: Nhật Sinh"
+                            <label for="username" class="form-label">Tài khoản</label>
+                            <input id="username" name="username" type="text" placeholder="Nhập tài khoản"
                                 class="form-control">
-                            <span class="form-message-name form-message"></span>
+                            <span class="form-message-username form-message"></span>
                         </div>
                         <div class="form-group">
-                            <label for="phone" class="form-label">Số điện thoại</label>
-                            <input id="phone" name="phone" type="text" placeholder="Nhập số điện thoại"
+                            <label for="email" class="form-label">Email</label>
+                            <input id="email" name="email" type="email" placeholder="Nhập email"
                                 class="form-control">
-                            <span class="form-message-phone form-message"></span>
+                            <span class="form-message-email form-message"></span>
                         </div>
                         <div class="form-group">
                             <label for="password" class="form-label">Mật khẩu</label>
@@ -319,10 +318,10 @@
                         tôi</p>
                     <form action="" class="login-form">
                         <div class="form-group">
-                            <label for="phone" class="form-label">Số điện thoại</label>
-                            <input id="phone-login" name="phone" type="text" placeholder="Nhập số điện thoại"
+                            <label for="username" class="form-label">Tài khoản</label>
+                            <input id="username-login" name="username" type="text" placeholder="Nhập tài khoản"
                                 class="form-control">
-                            <span class="form-message phonelog"></span>
+                            <span class="form-message usernamelog"></span>
                         </div>
                         <div class="form-group">
                             <label for="password" class="form-label">Mật khẩu</label>
