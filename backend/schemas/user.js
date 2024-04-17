@@ -18,6 +18,8 @@ var userSchema = new mongoose.Schema({
         default: true
     },
     email: String,
+    address: String,
+    phone: String,
     tokenResetPassword: String,
     tokenResetPasswordExp: String
 }, { timestamps: true })
