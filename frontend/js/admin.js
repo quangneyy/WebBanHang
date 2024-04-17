@@ -10,9 +10,8 @@ async function checkLogin() {
         if (response.ok) {
             const userData = await response.json();
             const currentUser = userData.data;
-
             if (currentUser.role.includes('ADMIN')) {
-                document.getElementById("name-acc").innerHTML = currentUser.fullname;
+                document.getElementById("name-acc").innerHTML = currentUser.username;
             } else {
                 document.querySelector("body").innerHTML = `<div class="access-denied-section">
                     <img class="access-denied-img" src="./assets/img/access-denied.webp" alt="">
@@ -25,7 +24,16 @@ async function checkLogin() {
         console.error('Error:', error);
     }
 }
-
+function getToken() {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+        const [name, value] = cookie.split('=');
+        if (name.trim() === 'kento') {
+            return value;
+        }
+    }
+    return '';
+}
 window.onload = checkLogin();
 
 //do sidebar open and close
@@ -58,7 +66,6 @@ for(let i = 0; i < sidebars.length; i++) {
 }
 
 const closeBtn = document.querySelectorAll('.section');
-console.log(closeBtn[0])
 for(let i=0;i<closeBtn.length;i++){
     closeBtn[i].addEventListener('click',(e) => {
         sidebar.classList.add("open");
