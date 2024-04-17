@@ -365,37 +365,28 @@ loginbtn.addEventListener('click', () => {
 // Chức năng đăng ký
 let signupButton = document.getElementById('signup-button');
 let loginButton = document.getElementById('login-button');
-signupButton.addEventListener('click', () => {
+signupButton.addEventListener('click', async () => {
     event.preventDefault();
-    let fullNameUser = document.getElementById('fullname').value;
-    let phoneUser = document.getElementById('phone').value;
+    let usernameUser = document.getElementById('username').value;
+    let emailUser = document.getElementById('email').value;
     let passwordUser = document.getElementById('password').value;
     let passwordConfirmation = document.getElementById('password_confirmation').value;
     let checkSignup = document.getElementById('checkbox-signup').checked;
     // Check validate
-    if (fullNameUser.length == 0) {
-        document.querySelector('.form-message-name').innerHTML = 'Vui lòng nhập họ vâ tên';
-        document.getElementById('fullname').focus();
-    } else if (fullNameUser.length < 3) {
-        document.getElementById('fullname').value = '';
-        document.querySelector('.form-message-name').innerHTML = 'Vui lòng nhập họ và tên lớn hơn 3 kí tự';
+    if (usernameUser.length == 0) {
+        document.querySelector('.form-message-username').innerHTML = 'Vui lòng tài khoản';
+        document.getElementById('username').focus();
     } else {
-        document.querySelector('.form-message-name').innerHTML = '';
+        document.querySelector('.form-message-username').innerHTML = '';
     }
-    if (phoneUser.length == 0) {
-        document.querySelector('.form-message-phone').innerHTML = 'Vui lòng nhập vào số điện thoại';
-    } else if (phoneUser.length != 10) {
-        document.querySelector('.form-message-phone').innerHTML = 'Vui lòng nhập vào số điện thoại 10 số';
-        document.getElementById('phone').value = '';
+    if (emailUser.length === 0) {
+        document.querySelector('.form-message-email').innerHTML = 'Vui lòng nhập email';
     } else {
-        document.querySelector('.form-message-phone').innerHTML = '';
-    }
+        document.querySelector('.form-message-email').innerHTML = '';
+    }    
     if (passwordUser.length == 0) {
         document.querySelector('.form-message-password').innerHTML = 'Vui lòng nhập mật khẩu';
-    } else if (passwordUser.length < 6) {
-        document.querySelector('.form-message-password').innerHTML = 'Vui lòng nhập mật khẩu lớn hơn 6 kí tự';
-        document.getElementById('password').value = '';
-    } else {
+    }else {
         document.querySelector('.form-message-password').innerHTML = '';
     }
     if (passwordConfirmation.length == 0) {
@@ -412,122 +403,160 @@ signupButton.addEventListener('click', () => {
         document.querySelector('.form-message-checkbox').innerHTML = '';
     }
 
-    if (fullNameUser && phoneUser && passwordUser && passwordConfirmation && checkSignup) {
-        if (passwordConfirmation == passwordUser) {
-            let user = {
-                fullname: fullNameUser,
-                phone: phoneUser,
-                password: passwordUser,
-                address: '',
-                email: '',
-                status: 1,
-                join: new Date(),
-                cart: [],
-                userType: 0
-            }
-            let accounts = localStorage.getItem('accounts') ? JSON.parse(localStorage.getItem('accounts')) : [];
-            let checkloop = accounts.some(account => {
-                return account.phone == user.phone;
-            })
-            if (!checkloop) {
-                accounts.push(user);
-                localStorage.setItem('accounts', JSON.stringify(accounts));
-                localStorage.setItem('currentuser', JSON.stringify(user));
-                toast({ title: 'Thành công', message: 'Tạo thành công tài khoản !', type: 'success', duration: 3000 });
-                closeModal();
-                kiemtradangnhap();
-                updateAmount();
-            } else {
-                toast({ title: 'Thất bại', message: 'Tài khoản đã tồn tại !', type: 'error', duration: 3000 });
-            }
+    const userData = {
+        username: usernameUser,
+        email: emailUser,
+        password: passwordUser
+    };
+    
+    try {
+        const response = await fetch('http://localhost:3000/api/v1/auth/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(userData)
+        });
+
+        const responseData = await response.json();
+        if (response.ok) {
+            toast({ title: 'Thành công', message: 'Tạo thành công tài khoản !', type: 'success', duration: 3000 });
+            closeModal();
+            kiemtradangnhap();
+            updateAmount();
         } else {
-            toast({ title: 'Thất bại', message: 'Sai mật khẩu !', type: 'error', duration: 3000 });
+            let errorMessage = 'Đã xảy ra lỗi khi tạo tài khoản.';
+        
+            if (responseData && responseData.data && Array.isArray(responseData.data)) {
+                errorMessage = '';
+                responseData.data.forEach(error => {
+                    errorMessage += `${error.msg}<br>`;
+                });
+            }   
+            toast({ title: 'Thất bại', message: errorMessage, type: 'error', duration: 3000 });
         }
+    } catch (error) {
+        console.error('Error:', error);
+        toast({ title: 'Lỗi', message: 'Đã xảy ra lỗi khi gửi yêu cầu đăng ký tài khoản.', type: 'error', duration: 3000 });
     }
 }
 )
 
 // Dang nhap
-loginButton.addEventListener('click', () => {
+loginButton.addEventListener('click', async () => {
     event.preventDefault();
-    let phonelog = document.getElementById('phone-login').value;
+    let usernamelog = document.getElementById('username-login').value;
     let passlog = document.getElementById('password-login').value;
-    let accounts = JSON.parse(localStorage.getItem('accounts'));
 
-    if (phonelog.length == 0) {
-        document.querySelector('.form-message.phonelog').innerHTML = 'Vui lòng nhập vào số điện thoại';
-    } else if (phonelog.length != 10) {
-        document.querySelector('.form-message.phonelog').innerHTML = 'Vui lòng nhập vào số điện thoại 10 số';
-        document.getElementById('phone-login').value = '';
+    if (usernamelog.length == 0) {
+        document.querySelector('.form-message.usernamelog').innerHTML = 'Vui lòng nhập tài khoản';
     } else {
-        document.querySelector('.form-message.phonelog').innerHTML = '';
+        document.querySelector('.form-message.usernamelog').innerHTML = '';
     }
 
     if (passlog.length == 0) {
         document.querySelector('.form-message-check-login').innerHTML = 'Vui lòng nhập mật khẩu';
-    } else if (passlog.length < 6) {
-        document.querySelector('.form-message-check-login').innerHTML = 'Vui lòng nhập mật khẩu lớn hơn 6 kí tự';
-        document.getElementById('passwordlogin').value = '';
     } else {
         document.querySelector('.form-message-check-login').innerHTML = '';
     }
 
-    if (phonelog && passlog) {
-        let vitri = accounts.findIndex(item => item.phone == phonelog);
-        if (vitri == -1) {
-            toast({ title: 'Error', message: 'Tài khoản của bạn không tồn tại', type: 'error', duration: 3000 });
-        } else if (accounts[vitri].password == passlog) {
-            if(accounts[vitri].status == 0) {
-                toast({ title: 'Warning', message: 'Tài khoản của bạn đã bị khóa', type: 'warning', duration: 3000 });
-            } else {
-                localStorage.setItem('currentuser', JSON.stringify(accounts[vitri]));
+    if (usernamelog && passlog) {
+        const userData = {
+            username: usernamelog,
+            password: passlog
+        };
+        
+        try {
+            const response = await fetch('http://localhost:3000/api/v1/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(userData)
+            });
+
+            const responseData = await response.json();
+            if (response.ok) {
+                document.cookie = "kento=" + responseData.data + "; expires=" + new Date(Date.now() + 3600 * 1000).toUTCString() + "; path=/;";
                 toast({ title: 'Success', message: 'Đăng nhập thành công', type: 'success', duration: 3000 });
                 closeModal();
                 kiemtradangnhap();
                 checkAdmin();
                 updateAmount();
+
+            } else {
+                toast({ title: 'Error', message: responseData.data, type: 'error', duration: 3000 });
             }
-        } else {
-            toast({ title: 'Warning', message: 'Sai mật khẩu', type: 'warning', duration: 3000 });
+        } catch (error) {
+            console.error('Error:', error);
+            toast({ title: 'Lỗi', message: 'Đã xảy ra lỗi khi gửi yêu cầu đăng nhập.', type: 'error', duration: 3000 });
         }
     }
-})
+});
 
 // Kiểm tra xem có tài khoản đăng nhập không ?
-function kiemtradangnhap() {
-    let currentUser = localStorage.getItem('currentuser');
-    if (currentUser != null) {
-        let user = JSON.parse(currentUser);
-        document.querySelector('.auth-container').innerHTML = `<span class="text-dndk">Tài khoản</span>
-            <span class="text-tk">${user.fullname} <i class="fa-sharp fa-solid fa-caret-down"></span>`
-        document.querySelector('.header-middle-right-menu').innerHTML = `<li><a href="javascript:;" onclick="myAccount()"><i class="fa-light fa-circle-user"></i> Tài khoản của tôi</a></li>
-            <li><a href="javascript:;" onclick="orderHistory()"><i class="fa-regular fa-bags-shopping"></i> Đơn hàng đã mua</a></li>
-            <li class="border"><a id="logout" href="javascript:;"><i class="fa-light fa-right-from-bracket"></i> Thoát tài khoản</a></li>`
-        document.querySelector('#logout').addEventListener('click',logOut)
+async function kiemtradangnhap() {
+    try {
+        const response = await fetch('http://localhost:3000/api/v1/auth/me', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${getToken()}`
+            }
+        });
+        
+        if (response.ok) {
+            const userData = await response.json();
+            document.querySelector('.auth-container').innerHTML = `<span class="text-dndk">Tài khoản</span>
+            <span class="text-tk">${userData.data.username} <i class="fa-sharp fa-solid fa-caret-down"></span>`
+            document.querySelector('.header-middle-right-menu').innerHTML = `<li><a href="javascript:;" onclick="myAccount()"><i class="fa-light fa-circle-user"></i> Tài khoản của tôi</a></li>
+                <li><a href="javascript:;" onclick="orderHistory()"><i class="fa-regular fa-bags-shopping"></i> Đơn hàng đã mua</a></li>
+                <li class="border"><a id="logout" href="javascript:;"><i class="fa-light fa-right-from-bracket"></i> Thoát tài khoản</a></li>`
+            document.querySelector('#logout').addEventListener('click', logOut);        
+        } else {
+        }
+    } catch (error) {
     }
+}
+
+function getToken() {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+        const [name, value] = cookie.split('=');
+        if (name.trim() === 'kento') {
+            return value;
+        }
+    }
+    return '';
 }
 
 function logOut() {
-    let accounts = JSON.parse(localStorage.getItem('accounts'));
-    user = JSON.parse(localStorage.getItem('currentuser'));
-    let vitri = accounts.findIndex(item => item.phone == user.phone)
-    accounts[vitri].cart.length = 0;
-    for (let i = 0; i < user.cart.length; i++) {
-        accounts[vitri].cart[i] = user.cart[i];
-    }
-    localStorage.setItem('accounts', JSON.stringify(accounts));
-    localStorage.removeItem('currentuser');
+    document.cookie = 'kento=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
     window.location = "/";
 }
 
-function checkAdmin() {
-    let user = JSON.parse(localStorage.getItem('currentuser'));
-    if(user && user.userType == 1) {
-        let node = document.createElement(`li`);
-        node.innerHTML = `<a href="./admin.html"><i class="fa-light fa-gear"></i> Quản lý cửa hàng</a>`
-        document.querySelector('.header-middle-right-menu').prepend(node);
-    } 
+
+async function checkAdmin() {
+    try {
+        const response = await fetch('http://localhost:3000/api/v1/auth/me', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${getToken()}`
+            }
+        });
+        
+        if (response.ok) {
+            const userData = await response.json();
+            if (userData.data && userData.data.role && userData.data.role.includes('ADMIN')) {
+                const node = document.createElement('li');
+                node.innerHTML = `<a href="./admin.html"><i class="fa-light fa-gear"></i> Quản lý cửa hàng</a>`;
+                document.querySelector('.header-middle-right-menu').prepend(node);
+            }
+        } else {
+        }
+    } catch (error) {
+    }
 }
+
 
 window.onload = kiemtradangnhap();
 window.onload = checkAdmin();
@@ -554,55 +583,101 @@ function emailIsValid(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 }
 
-function userInfo() {
-    let user = JSON.parse(localStorage.getItem('currentuser'));
-    document.getElementById('infoname').value = user.fullname;
-    document.getElementById('infophone').value = user.phone;
-    document.getElementById('infoemail').value = user.email;
-    document.getElementById('infoaddress').value = user.address;
-    if (user.email == undefined) {
-        infoemail.value = '';
-    }
-    if (user.address == undefined) {
-        infoaddress.value = '';
+function phoneIsValid(phone) {
+    return /^(0|\+84)\d{9,10}$/.test(phone);
+}
+
+async function userInfo() {
+    try {
+        const response = await fetch('http://localhost:3000/api/v1/auth/me', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${getToken()}`
+            }
+        });
+
+        if (response.ok) {
+            const userData = await response.json();
+            const user = userData.data;
+            document.getElementById('infousername').value = user.username || '';
+            document.getElementById('infoemail').value = user.email || '';
+            document.getElementById('infophone').value = user.phone || '';
+            document.getElementById('infoaddress').value = user.address || '';
+        } else {
+        }
+    } catch (error) {
     }
 }
+
 
 // Thay doi thong tin
-function changeInformation() {
-    let accounts = JSON.parse(localStorage.getItem('accounts'));
-    let user = JSON.parse(localStorage.getItem('currentuser'));
-    let infoname = document.getElementById('infoname');
-    let infoemail = document.getElementById('infoemail');
-    let infoaddress = document.getElementById('infoaddress');
+async function changeInformation() {
+    try {
+        const meResponse = await fetch('http://localhost:3000/api/v1/auth/me', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getToken()}`
+            }
+        });
 
-    user.fullname = infoname.value;
-    if (infoemail.value.length > 0) {
-        if (!emailIsValid(infoemail.value)) {
-            document.querySelector('.inforemail-error').innerHTML = 'Vui lòng nhập lại email!';
-            infoemail.value = '';
+        if (meResponse.ok) {
+            const userData = await meResponse.json();
+            const user = userData.data;
+
+            let infoemail = document.getElementById('infoemail').value;
+            let infophone = document.getElementById('infophone').value;
+            let infoaddress = document.getElementById('infoaddress').value;
+
+            if (infoemail.length > 0) {
+                if (!emailIsValid(infoemail)) {
+                    document.querySelector('.inforemail-error').innerHTML = 'Vui lòng nhập lại email!';
+                    infoemail.value = '';
+                } else {
+                    user.email = infoemail;
+                }
+            }
+        
+            if (infophone.length > 0) {
+                if (!phoneIsValid(infophone)) {
+                    document.querySelector('.inforphone-error').innerHTML = 'Vui lòng nhập lại số điện thoại!';
+                    infophone.value = '';
+                } else {
+                    user.phone = infophone;
+                }
+            }
+        
+            if (infoaddress.length > 0) {
+                user.address = infoaddress;
+            }
+
+            const updateResponse = await fetch(`http://localhost:3000/api/v1/users/${user._id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${getToken()}`
+                },
+                body: JSON.stringify(user)
+            });
+
+            const responseData = await updateResponse.json();
+            if (updateResponse.ok) {
+                kiemtradangnhap();
+                toast({ title: 'Success', message: 'Cập nhật thông tin thành công!', type: 'success', duration: 3000 });
+            } else {
+                toast({ title: 'Error', message: responseData.data, type: 'error', duration: 3000 });
+            }
         } else {
-            user.email = infoemail.value;
+            console.error('Error fetching user data:', meResponse.statusText);
         }
+    } catch (error) {
+        console.error('Error:', error);
     }
-
-    if (infoaddress.value.length > 0) {
-        user.address = infoaddress.value;
-    }
-
-    let vitri = accounts.findIndex(item => item.phone == user.phone)
-
-    accounts[vitri].fullname = user.fullname;
-    accounts[vitri].email = user.email;
-    accounts[vitri].address = user.address;
-    localStorage.setItem('currentuser', JSON.stringify(user));
-    localStorage.setItem('accounts', JSON.stringify(accounts));
-    kiemtradangnhap();
-    toast({ title: 'Success', message: 'Cập nhật thông tin thành công !', type: 'success', duration: 3000 });
 }
 
+
 // Đổi mật khẩu 
-function changePassword() {
+async function changePassword() {
     let currentUser = JSON.parse(localStorage.getItem("currentuser"));
     let passwordCur = document.getElementById('password-cur-info');
     let passwordAfter = document.getElementById('password-after-info');
@@ -616,7 +691,7 @@ function changePassword() {
     }
 
     if (passwordAfter.value.length == 0) {
-        document.querySelector('.password-after-info-error').innerHTML = 'Vui lòn nhập mật khẩu mới';
+        document.querySelector('.password-after-info-error').innerHTML = 'Vui lòng nhập mật khẩu mới';
         check = false;
     } else {
         document.querySelector('.password-after-info-error').innerHTML = '';
@@ -629,41 +704,49 @@ function changePassword() {
         document.querySelector('.password-after-comfirm-error').innerHTML = '';
     }
 
-    if (check == true) {
-        if (passwordCur.value.length > 0) {
-            if (passwordCur.value == currentUser.password) {
-                document.querySelector('.password-cur-info-error').innerHTML = '';
-                if (passwordAfter.value.length > 0) {
-                    if (passwordAfter.value.length < 6) {
-                        document.querySelector('.password-after-info-error').innerHTML = 'Vui lòng nhập mật khẩu mới có số  kí tự lớn hơn bằng 6';
-                    } else {
-                        document.querySelector('.password-after-info-error').innerHTML = '';
-                        if (passwordConfirm.value.length > 0) {
-                            if (passwordConfirm.value == passwordAfter.value) {
-                                document.querySelector('.password-after-comfirm-error').innerHTML = '';
-                                currentUser.password = passwordAfter.value;
-                                localStorage.setItem('currentuser', JSON.stringify(currentUser));
-                                let userChange = JSON.parse(localStorage.getItem('currentuser'));
-                                let accounts = JSON.parse(localStorage.getItem('accounts'));
-                                let accountChange = accounts.find(acc => {
-                                    return acc.phone = userChange.phone;
-                                })
-                                accountChange.password = userChange.password;
-                                localStorage.setItem('accounts', JSON.stringify(accounts));
-                                toast({ title: 'Success', message: 'Đổi mật khẩu thành công !', type: 'success', duration: 3000 });
-                            } else {
-                                document.querySelector('.password-after-comfirm-error').innerHTML = 'Mật khẩu bạn nhập không trùng khớp';
-                            }
-                        } else {
-                            document.querySelector('.password-after-comfirm-error').innerHTML = 'Vui lòng xác nhận mật khẩu';
-                        }
-                    }
-                } else {
-                    document.querySelector('.password-after-info-error').innerHTML = 'Vui lòng nhập mật khẩu mới';
-                }
+    if (passwordAfter.value !== passwordConfirm.value) {
+        document.querySelector('.password-after-comfirm-error').innerHTML = 'Mật khẩu xác nhận không khớp';
+        check = false;
+    } else {
+        document.querySelector('.password-after-comfirm-error').innerHTML = '';
+    }
+
+    if (check) {
+        try {
+            const response = await fetch('http://localhost:3000/api/v1/auth/changepassword', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${getToken()}`
+                },
+                body: JSON.stringify({
+                    oldpassword: passwordCur.value,
+                    newpassword: passwordAfter.value
+                })
+            });
+
+            const responseData = await response.json();
+            if (response.ok) {
+                console.log(responseData);
+                toast({ title: 'Success', message: 'Đổi mật khẩu thành công!', type: 'success', duration: 3000 });
             } else {
-                document.querySelector('.password-cur-info-error').innerHTML = 'Bạn đã nhập sai mật khẩu hiện tại';
+                let errorMessage = 'Đã xảy ra lỗi khi đổi mật khẩu.';
+                if (responseData && responseData.data) {
+                    if (typeof responseData.data === 'string') {
+                        errorMessage = responseData.data;
+                    } else if (Array.isArray(responseData.data)) {
+                        errorMessage = '';
+                        responseData.data.forEach(error => {
+                            errorMessage += `${error.msg}<br>`;
+                        });
+                    }
+                }
+                toast({ title: 'Error', message: errorMessage || 'Đã xảy ra lỗi khi đổi mật khẩu.', type: 'error', duration: 3000 });
             }
+            
+        } catch (error) {
+            console.error('Lỗi khi gửi yêu cầu:', error);
+            toast({ title: 'Error', message: 'Đã xảy ra lỗi khi đổi mật khẩu.', type: 'error', duration: 3000 });
         }
     }
 }

@@ -3,7 +3,7 @@ function createProduct() {
     if (localStorage.getItem('products') == null) {
         let products = [{
             id: 1,
-            status: 1, 
+            status: 0, 
             title: 'Nấm đùi gà xào cháy tỏi',
             img: './assets/img/products/nam-dui-ga-chay-toi.jpeg',
             category: 'Món mặn',
