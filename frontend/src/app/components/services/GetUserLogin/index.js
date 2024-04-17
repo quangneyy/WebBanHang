@@ -2,15 +2,11 @@ import api from '../../../../app/ApiConfig';
 import { Apis } from '../../../../config';
 import Cookies from 'js-cookie';
 import { NotificationManager } from 'react-notifications';
+import axios from 'axios';
 
 const getUserLogin = async (data) => {
     try {
-        let result = await api.post(Apis.GetUserLogin, data, {
-            withCredentials: true,
-            headers: {
-                'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'
-            }
-        });
+        const result = await axios.post(Apis.GetUserLogin, data);
         if (result.data.error) {
             NotificationManager.error(result.data.error);
             return null;

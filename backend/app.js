@@ -1,12 +1,10 @@
-var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var mongoose = require('mongoose');
 var config = require('../backend/configs/config');
-
-
+var cors = require('cors');
 var app = express();
 
 // view engine setup
@@ -19,25 +17,26 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-mongoose.connect(config.SERVER).then(
-  function () {
-    console.log("connect");
-  }
-).catch (function(err) {
-})
+// CORS configuration
+app.use(cors());
 
+// MongoDB connection
+mongoose.connect(config.SERVER)
+  .then(() => {
+    console.log("Connected to MongoDB");
+  })
+  .catch((err) => {
+    console.error("Error connecting to MongoDB:", err);
+  });
 
-//localhost:3000/
+// Routes
 app.use('/api/v1/', require('./routes/index'));
 
-// catch 404 and forward to error handler
+// 404 handler
 app.use(function (req, res, next) {
   next(createError(404));
 });
-
-
-
-// error handler
+// Error handler
 app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;

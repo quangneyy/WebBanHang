@@ -3,10 +3,6 @@ import { GetUserLogin } from '../../components/services';
 import { NotificationManager } from "react-notifications";
 import Register from '../register';
 
-const emailRegex = RegExp(
-    /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/
-);
-
 const formValid = ({ formErrors, ...rest }) => {
     let valid = true;
 
@@ -41,7 +37,7 @@ export default class Login extends Component {
 
         switch (name) {
             case "email":
-                formErrors.email = emailRegex.test(value)
+                formErrors.email = value
                     ? ""
                     : "invalid email address";
                 break;
@@ -59,9 +55,10 @@ export default class Login extends Component {
     handleSubmit = async (event) => {
         event.preventDefault();
         let { email, password } = this.state;
-        let data = { email: email, password: password }
+        let data = { username: email, password: password }
         if (formValid(this.state)) {
             let user = await GetUserLogin.getUserLogin(data);
+            console.log(user);
             if (user) {
                 NotificationManager.success("success", "Login");
                 await GetUserLogin.authenticate(user.token,email);
@@ -100,7 +97,7 @@ export default class Login extends Component {
                                                             <h5 className="heading-design-h5">Login to your account</h5>
                                                             <fieldset className="form-group">
                                                                 <label>Enter Email/Mobile number</label>
-                                                                <input type="email" className="form-control" name="email" value={email} onChange={this.handleChange} />
+                                                                <input type="text" className="form-control" name="email" value={email} onChange={this.handleChange} />
                                                                 {formErrors.email.length > 0 && (
                                                                     <span className="errorMessage">{formErrors.email}</span>
                                                                 )}

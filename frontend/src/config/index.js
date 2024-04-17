@@ -1,10 +1,10 @@
 
-const API_URL = "http://localhost:4000";
+const API_URL = "http://localhost:3000/api/v1";
 
 
 
 const Apis = {
-  //product api
+  GetUserLogin: `${API_URL}/auth/login`,
   GetProductById: `${API_URL}/api/product/getWebProductById?id=`,
   GetAllGroceryStaple: `${API_URL}/api/product/getAllGroceryStaple`,
   GetAllProductList: `${API_URL}/api/product/list/`,
