@@ -1,24 +1,29 @@
 
-// Lấy dữ liệu từ localStorage
-const productsFromLocalStorage = localStorage.getItem('products');
+async function getProductData() {
+    try {
+        // Gửi yêu cầu GET đến endpoint API để lấy danh sách sản phẩm
+        const response = await fetch('http://localhost:3000/api/v1/products');
 
-// Kiểm tra xem dữ liệu có tồn tại hay không
-if (productsFromLocalStorage) {
-    // Parse dữ liệu JSON thành mảng các đối tượng
-    const products = JSON.parse(productsFromLocalStorage);
+        // Kiểm tra nếu yêu cầu thành công (status code 200)
+        if (!response.ok) {
+            throw new Error('Failed to fetch products');
+        }
 
-    // Lọc các sản phẩm không bị xóa
-    const productAll = products.filter(item => item.isDeleted === false);
+        // Chuyển đổi dữ liệu nhận được sang định dạng JSON
+        const products = await response.json();
 
-    // Sử dụng mảng productAll ở đây cho các mục đích tiếp theo
-} else {
-    console.error('No products data found in localStorage.');
+        return products; // Trả về danh sách sản phẩm
+
+    } catch (error) {
+        console.error('Error fetching products:', error.message);
+        return []; // Trả về mảng rỗng nếu có lỗi
+    }
 }
 
 
 // Doi sang dinh dang tien VND
 function vnd(price) {
-    return price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+    return price && price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
 }
 
 // Close popup 
@@ -65,161 +70,216 @@ function decreasingNumber(e) {
 }
 
 //Xem chi tiet san pham
-function detailProduct(index) {
-    let modal = document.querySelector('.modal.product-detail');
-    let products = JSON.parse(localStorage.getItem('products'));
-    event.preventDefault();
-    let infoProduct = products.find(sp => sp._id === index);
+async function detailProduct(index) {
+    try {
+        const products = await getProductData();
+        const infoProduct = products.find(product => product._id === index);
 
-    // Trích xuất đường dẫn hình ảnh từ mảng images
-    let imageUrl = infoProduct.images.length > 0 ? infoProduct.images[0].url : ''; 
+        // Trích xuất đường dẫn hình ảnh từ mảng images
+        const imageUrl = infoProduct.images.length > 0 ? infoProduct.images[0].url : '';
 
-    let modalHtml = `<div class="modal-header">
-    <img class="product-image" src="${imageUrl}" alt="">
-    </div>
-    <div class="modal-body">
-        <h2 class="product-title">${infoProduct.name}</h2>
-        <div class="product-control">
-            <div class="priceBox">
-                <span class="current-price">${vnd(infoProduct.price)}</span>
+        const modalHtml = `<div class="modal-header">
+            <img class="product-image" src="${imageUrl}" alt="">
             </div>
-            <div class="buttons_added">
-                <input class="minus is-form" type="button" value="-" onclick="decreasingNumber(this)">
-                <input class="input-qty" max="100" min="1" name="" type="number" value="1">
-                <input class="plus is-form" type="button" value="+" onclick="increasingNumber(this)">
+            <div class="modal-body">
+                <h2 class="product-title">${infoProduct.name}</h2>
+                <div class="product-control">
+                    <div class="priceBox">
+                        <span class="current-price">${vnd(infoProduct.price)}</span>
+                    </div>
+                    <div class="buttons_added">
+                        <input class="minus is-form" type="button" value="-" onclick="decreasingNumber(this)">
+                        <input class="input-qty" max="100" min="1" name="" type="number" value="1">
+                        <input class="plus is-form" type="button" value="+" onclick="increasingNumber(this)">
+                    </div>
+                </div>
+                <p class="product-description">${infoProduct.description}</p>
             </div>
-        </div>
-        <p class="product-description">${infoProduct.description}</p>
-    </div>
-    <div class="notebox">
-            <p class="notebox-title">Ghi chú</p>
-            <textarea class="text-note" id="popup-detail-note" placeholder="Nhập thông tin cần lưu ý..."></textarea>
-    </div>
-    <div class="modal-footer">
-        <div class="price-total">
-            <span class="thanhtien">Thành tiền</span>
-            <span class="price">${vnd(infoProduct.price)}</span>
-        </div>
-        <div class="modal-footer-control">
-            <button class="button-dathangngay" data-product="${infoProduct._id}">Đặt hàng ngay</button>
-            <button class="button-dat" id="add-cart" onclick="animationCart()"><i class="fa-light fa-basket-shopping"></i></button>
-        </div>
-    </div>`;
-    document.querySelector('#product-detail-content').innerHTML = modalHtml;
-    modal.classList.add('open');
-    body.style.overflow = "hidden";
-    //Cap nhat gia tien khi tang so luong san pham
-    let tgbtn = document.querySelectorAll('.is-form');
-    let qty = document.querySelector('.product-control .input-qty');
-    let priceText = document.querySelector('.price');
-    tgbtn.forEach(element => {
-        element.addEventListener('click', () => {
-            let price = infoProduct.price * parseInt(qty.value);
-            priceText.innerHTML = vnd(price);
+            <div class="notebox">
+                <p class="notebox-title">Ghi chú</p>
+                <textarea class="text-note" id="popup-detail-note" placeholder="Nhập thông tin cần lưu ý..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <div class="price-total">
+                    <span class="thanhtien">Thành tiền</span>
+                    <span class="price">${vnd(infoProduct.price)}</span>
+                </div>
+                <div class="modal-footer-control">
+                    <button class="button-dathangngay" data-product="${infoProduct._id}">Đặt hàng ngay</button>
+                    <button class="button-dat" id="add-cart" onclick="animationCart()"><i class="fa-light fa-basket-shopping"></i></button>
+                </div>
+            </div>`;
+
+        document.querySelector('#product-detail-content').innerHTML = modalHtml;
+        const modal = document.querySelector('.modal.product-detail');
+        modal.classList.add('open');
+        body.style.overflow = "hidden";
+
+        // Cập nhật giá tiền khi tăng số lượng sản phẩm
+        const tgbtn = document.querySelectorAll('.is-form');
+        const qty = document.querySelector('.product-control .input-qty');
+        const priceText = document.querySelector('.price');
+        tgbtn.forEach(element => {
+            element.addEventListener('click', () => {
+                const price = infoProduct.price * parseInt(qty.value);
+                priceText.innerHTML = vnd(price);
+            });
         });
-    });
-    // Them san pham vao gio hang
-    let productbtn = document.querySelector('.button-dat');
-    productbtn.addEventListener('click', (e) => {
-        if (localStorage.getItem('currentuser')) {
-            addCart(infoProduct._id);
-        } else {
-            toast({ title: 'Warning', message: 'Chưa đăng nhập tài khoản !', type: 'warning', duration: 3000 });
-        }
 
-    })
-    // Mua ngay san pham
-    dathangngay();
+        // Thêm sản phẩm vào giỏ hàng
+
+        const productbtn = document.querySelector('.button-dat');
+        productbtn.addEventListener('click', async (e) => {
+            try {
+                const response = await fetch('http://localhost:3000/api/v1/auth/me', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${getToken()}`
+                    }
+                });
+
+                if (response.ok) {
+                    // Đã đăng nhập
+                    addCart(infoProduct._id);
+                } else {
+                    // Chưa đăng nhập
+                    toast({ title: 'Warning', message: 'Chưa đăng nhập tài khoản !', type: 'warning', duration: 3000 });
+                }
+            } catch (error) {
+
+            }
+        });
+
+
+
+        // Mua ngay sản phẩm
+        dathangngay();
+    } catch (error) {
+        console.error('Error loading product details:', error.message);
+    }
 }
 
 
 
 function animationCart() {
     document.querySelector(".count-product-cart").style.animation = "slidein ease 1s"
-    setTimeout(()=>{
+    setTimeout(() => {
         document.querySelector(".count-product-cart").style.animation = "none"
-    },1000)
+    }, 1000)
 }
 
 // Them SP vao gio hang
-function addCart(index) {
-    let currentuser = localStorage.getItem('currentuser') ? JSON.parse(localStorage.getItem('currentuser')) : [];
-    let soluong = document.querySelector('.input-qty').value;
-    let popupDetailNote = document.querySelector('#popup-detail-note').value;
-    let note = popupDetailNote == "" ? "Không có ghi chú" : popupDetailNote;
-    let productcart = {
-        id: index,
-        soluong: parseInt(soluong),
-        note: note
+async function addCart(index) {
+    try {
+        const response = await fetch('http://localhost:3000/api/v1/auth/me', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${getToken()}`
+            }
+        });
+
+        if (response.ok) {
+            const userData = await response.json();
+            // Lưu thông tin người dùng vào sessionStorage
+            const currentuser = { cart: [] }; // Khởi tạo đối tượng người dùng mới
+            sessionStorage.setItem('currentuser', JSON.stringify(currentuser));
+
+            // Thêm sản phẩm vào giỏ hàng
+            let quantity = document.querySelector('.input-qty').value;
+            let popupDetailNote = document.querySelector('#popup-detail-note').value;
+            let note = popupDetailNote == "" ? "Không có ghi chú" : popupDetailNote;
+            let productcart = {
+                id: index,
+                quantity: parseInt(quantity),
+                note: note
+            };
+            let cart = currentuser.cart;
+            let vitri = cart.findIndex(item => item.id == productcart.id);
+            if (vitri == -1) {
+                cart.push(productcart);
+            } else {
+                cart[vitri].quantity += parseInt(productcart.quantity);
+            }
+            sessionStorage.setItem('currentuser', JSON.stringify({ cart }));
+            updateAmount();
+            closeModal();
+            // toast({ title: 'Success', message: 'Thêm thành công sản phẩm vào giỏ hàng', type: 'success', duration: 3000 });
+        } else {
+            // Chưa đăng nhập, hiển thị thông báo cảnh báo
+            toast({ title: 'Warning', message: 'Chưa đăng nhập tài khoản !', type: 'warning', duration: 3000 });
+        }
+    } catch (error) {
+        console.error('Error checking authentication:', error.message);
     }
-    let vitri = currentuser.cart.findIndex(item => item.id == productcart.id);
-    if (vitri == -1) {
-        currentuser.cart.push(productcart);
-    } else {
-        currentuser.cart[vitri].soluong = parseInt(currentuser.cart[vitri].soluong) + parseInt(productcart.soluong);
-    }
-    localStorage.setItem('currentuser', JSON.stringify(currentuser));
-    updateAmount();
-    closeModal();
-    // toast({ title: 'Success', message: 'Thêm thành công sản phẩm vào giỏ hàng', type: 'success', duration: 3000 });
 }
 
+
 //Show gio hang
-function showCart() {
-    if (localStorage.getItem('currentuser') != null) {
-        let currentuser = JSON.parse(localStorage.getItem('currentuser'));
-        if (currentuser.cart.length != 0) {
-            document.querySelector('.gio-hang-trong').style.display = 'none';
-            document.querySelector('button.thanh-toan').classList.remove('disabled');
-            let productcarthtml = '';
-            currentuser.cart.forEach(item => {
-                let product = getProduct(item);
-                productcarthtml += `<li class="cart-item" data-id="${product.id}">
-                <div class="cart-item-info">
-                    <p class="cart-item-title">
-                        ${product.title}
-                    </p>
-                    <span class="cart-item-price price" data-price="${product.price}">
-                    ${vnd(parseInt(product.price))}
-                    </span>
-                </div>
-                <p class="product-note"><i class="fa-light fa-pencil"></i><span>${product.note}</span></p>
-                <div class="cart-item-control">
-                    <button class="cart-item-delete" onclick="deleteCartItem(${product.id},this)">Xóa</button>
-                    <div class="buttons_added">
-                        <input class="minus is-form" type="button" value="-" onclick="decreasingNumber(this)">
-                        <input class="input-qty" max="100" min="1" name="" type="number" value="${product.soluong}">
-                        <input class="plus is-form" type="button" value="+" onclick="increasingNumber(this)">
+async function showCart() {
+    const currentuser = sessionStorage.getItem('currentuser') ? JSON.parse(sessionStorage.getItem('currentuser')) : { cart: [] };
+
+    if (currentuser.cart.length !== 0) {
+        document.querySelector('.gio-hang-trong').style.display = 'none';
+        document.querySelector('button.thanh-toan').classList.remove('disabled');
+        let productcarthtml = '';
+
+        for (const item of currentuser.cart) {
+            const product = await getProduct(item); // Sử dụng await để đợi hàm getProduct hoàn thành
+            if (product) {
+                productcarthtml += `<li class="cart-item" data-id="${product._id}">
+                    <div class="cart-item-info">
+                        <p class="cart-item-title">
+                            ${product.name}
+                        </p>
+                        <span class="cart-item-price price" data-price="${product.price}">
+                            ${vnd(parseInt(product.price))}
+                        </span>
                     </div>
-                </div>
-            </li>`
-            });
-            document.querySelector('.cart-list').innerHTML = productcarthtml;
-            updateCartTotal();
-            saveAmountCart();
-        } else {
-            document.querySelector('.gio-hang-trong').style.display = 'flex'
+                    <p class="product-note"><i class="fa-light fa-pencil"></i><span>${item.note}</span></p>
+                    <div class="cart-item-control">
+                        <button class="cart-item-delete" onclick="deleteCartItem('${product._id}', this)">Xóa</button>
+                        <div class="buttons_added">
+                            <input class="minus is-form" type="button" value="-" onclick="decreasingNumber(this)">
+                            <input class="input-qty" max="100" min="1" name="" type="number" value="${item.quantity}">
+                            <input class="plus is-form" type="button" value="+" onclick="increasingNumber(this)">
+                        </div>
+                    </div>
+                </li>`;
+            } else {
+                console.error(`Product with ID ${item.id} not found.`);
+            }
         }
+
+        document.querySelector('.cart-list').innerHTML = productcarthtml;
+        updateCartTotal();
+        saveAmountCart();
+    } else {
+        document.querySelector('.gio-hang-trong').style.display = 'flex';
     }
+
     let modalCart = document.querySelector('.modal-cart');
     let containerCart = document.querySelector('.cart-container');
     let themmon = document.querySelector('.them-mon');
+
     modalCart.onclick = function () {
         closeCart();
-    }
+    };
+
     themmon.onclick = function () {
         closeCart();
-    }
+    };
+
     containerCart.addEventListener('click', (e) => {
         e.stopPropagation();
-    })
+    });
 }
+
 
 // Delete cart item
 function deleteCartItem(id, el) {
     let cartParent = el.parentNode.parentNode;
     cartParent.remove();
-    let currentUser = JSON.parse(localStorage.getItem('currentuser'));
+    let currentUser = JSON.parse(sessionStorage.getItem('currentuser'));
     let vitri = currentUser.cart.findIndex(item => item.id = id)
     currentUser.cart.splice(vitri, 1);
 
@@ -228,38 +288,53 @@ function deleteCartItem(id, el) {
         document.querySelector('.gio-hang-trong').style.display = 'flex';
         document.querySelector('button.thanh-toan').classList.add('disabled');
     }
-    localStorage.setItem('currentuser', JSON.stringify(currentUser));
+    sessionStorage.setItem('currentuser', JSON.stringify(currentUser));
     updateCartTotal();
 }
 
 //Update cart total
-function updateCartTotal() {
-    document.querySelector('.text-price').innerText = vnd(getCartTotal());
+async function updateCartTotal() {
+    try {
+        const total = await getCartTotal();
+        document.querySelector('.text-price').innerText = vnd(total);
+    } catch (error) {
+        console.error(error);
+    }
 }
 
-// Lay tong tien don hang
-function getCartTotal() {
-    let currentUser = JSON.parse(localStorage.getItem('currentuser'));
-    let tongtien = 0;
-    if (currentUser != null) {
-        currentUser.cart.forEach(item => {
-            let product = getProduct(item);
-            tongtien += (parseInt(product.soluong) * parseInt(product.price));
-        });
+async function getCartTotal() {
+    try {
+        let currentUser = JSON.parse(sessionStorage.getItem('currentuser'));
+        let tongtien = 0;
+        if (currentUser != null) {
+            // Tạo mảng các promise để lấy thông tin sản phẩm
+            let promises = currentUser.cart.map(item => getProduct(item));
+            // Chờ đợi tất cả các promise hoàn thành
+            let products = await Promise.all(promises);
+            // Tính tổng tiền
+            tongtien = products.reduce((total, product) => {
+                return total + parseInt(product.quantity) * parseInt(product.price);
+            }, 0);
+        }
+        return tongtien;
+    } catch (error) {
+        throw error;
     }
-    return tongtien;
 }
+
+
 
 // Get Product 
-function getProduct(item) {
-    let products = JSON.parse(localStorage.getItem('products'));
-    let infoProductCart = products.find(sp => item.id == sp.id)
+async function getProduct(item) {
+    const products = await getProductData();
+    let infoProductCart = products.find(sp => item.id === sp._id);
     let product = {
         ...infoProductCart,
         ...item
-    }
+    };
     return product;
 }
+
 
 window.onload = updateAmount();
 window.onload = updateCartTotal();
@@ -267,17 +342,17 @@ window.onload = updateCartTotal();
 // Lay so luong hang
 
 function getAmountCart() {
-    let currentuser = JSON.parse(localStorage.getItem('currentuser'))
+    let currentuser = JSON.parse(sessionStorage.getItem('currentuser'))
     let amount = 0;
     currentuser.cart.forEach(element => {
-        amount += parseInt(element.soluong);
+        amount += parseInt(element.quantity);
     });
     return amount;
 }
 
 //Update Amount Cart 
 function updateAmount() {
-    if (localStorage.getItem('currentuser') != null) {
+    if (sessionStorage.getItem('currentuser') != null) {
         let amount = getAmountCart();
         document.querySelector('.count-product-cart').innerText = amount;
     }
@@ -287,16 +362,16 @@ function updateAmount() {
 function saveAmountCart() {
     let cartAmountbtn = document.querySelectorAll(".cart-item-control .is-form");
     let listProduct = document.querySelectorAll('.cart-item');
-    let currentUser = JSON.parse(localStorage.getItem('currentuser'));
+    let currentUser = JSON.parse(sessionStorage.getItem('currentuser'));
     cartAmountbtn.forEach((btn, index) => {
         btn.addEventListener('click', () => {
             let id = listProduct[parseInt(index / 2)].getAttribute("data-id");
             let productId = currentUser.cart.find(item => {
                 return item.id == id;
             });
-            productId.soluong = parseInt(listProduct[parseInt(index / 2)].querySelector(".input-qty").value);
-            localStorage.setItem('currentuser', JSON.stringify(currentUser));
-            updateCartTotal();
+            productId.quantity = parseInt(listProduct[parseInt(index / 2)].querySelector(".input-qty").value);
+            sessionStorage.setItem('currentuser', JSON.stringify(currentUser));
+            saveAmountCart();
         })
     });
 }
@@ -315,13 +390,13 @@ function closeCart() {
 }
 
 // Open Search Advanced
-document.querySelector(".filter-btn").addEventListener("click",(e) => {
+document.querySelector(".filter-btn").addEventListener("click", (e) => {
     e.preventDefault();
     document.querySelector(".advanced-search").classList.toggle("open");
     document.getElementById("home-service").scrollIntoView();
 })
 
-document.querySelector(".form-search-input").addEventListener("click",(e) => {
+document.querySelector(".form-search-input").addEventListener("click", (e) => {
     e.preventDefault();
     document.getElementById("home-service").scrollIntoView();
 })
@@ -336,7 +411,7 @@ function openSearchMb() {
     document.querySelector(".header-middle-center").style.display = "block";
     document.querySelector(".header-middle-right-item.close").style.display = "block";
     let liItem = document.querySelectorAll(".header-middle-right-item.open");
-    for(let i = 0; i < liItem.length; i++) {
+    for (let i = 0; i < liItem.length; i++) {
         liItem[i].style.setProperty("display", "none", "important")
     }
 }
@@ -347,7 +422,7 @@ function closeSearchMb() {
     document.querySelector(".header-middle-center").style.display = "none";
     document.querySelector(".header-middle-right-item.close").style.display = "none";
     let liItem = document.querySelectorAll(".header-middle-right-item.open");
-    for(let i = 0; i < liItem.length; i++) {
+    for (let i = 0; i < liItem.length; i++) {
         liItem[i].style.setProperty("display", "block", "important")
     }
 }
@@ -405,10 +480,10 @@ signupButton.addEventListener('click', async () => {
         document.querySelector('.form-message-email').innerHTML = 'Vui lòng nhập email';
     } else {
         document.querySelector('.form-message-email').innerHTML = '';
-    }    
+    }
     if (passwordUser.length == 0) {
         document.querySelector('.form-message-password').innerHTML = 'Vui lòng nhập mật khẩu';
-    }else {
+    } else {
         document.querySelector('.form-message-password').innerHTML = '';
     }
     if (passwordConfirmation.length == 0) {
@@ -430,7 +505,7 @@ signupButton.addEventListener('click', async () => {
         email: emailUser,
         password: passwordUser
     };
-    
+
     try {
         const response = await fetch('http://localhost:3000/api/v1/auth/register', {
             method: 'POST',
@@ -448,13 +523,13 @@ signupButton.addEventListener('click', async () => {
             updateAmount();
         } else {
             let errorMessage = 'Đã xảy ra lỗi khi tạo tài khoản.';
-        
+
             if (responseData && responseData.data && Array.isArray(responseData.data)) {
                 errorMessage = '';
                 responseData.data.forEach(error => {
                     errorMessage += `${error.msg}<br>`;
                 });
-            }   
+            }
             toast({ title: 'Thất bại', message: errorMessage, type: 'error', duration: 3000 });
         }
     } catch (error) {
@@ -487,7 +562,7 @@ loginButton.addEventListener('click', async () => {
             username: usernamelog,
             password: passlog
         };
-        
+
         try {
             const response = await fetch('http://localhost:3000/api/v1/auth/login', {
                 method: 'POST',
@@ -525,7 +600,7 @@ async function kiemtradangnhap() {
                 'Authorization': `Bearer ${getToken()}`
             }
         });
-        
+
         if (response.ok) {
             const userData = await response.json();
             document.querySelector('.auth-container').innerHTML = `<span class="text-dndk">Tài khoản</span>
@@ -533,7 +608,7 @@ async function kiemtradangnhap() {
             document.querySelector('.header-middle-right-menu').innerHTML = `<li><a href="javascript:;" onclick="myAccount()"><i class="fa-light fa-circle-user"></i> Tài khoản của tôi</a></li>
                 <li><a href="javascript:;" onclick="orderHistory()"><i class="fa-regular fa-bags-shopping"></i> Đơn hàng đã mua</a></li>
                 <li class="border"><a id="logout" href="javascript:;"><i class="fa-light fa-right-from-bracket"></i> Thoát tài khoản</a></li>`
-            document.querySelector('#logout').addEventListener('click', logOut);        
+            document.querySelector('#logout').addEventListener('click', logOut);
         } else {
         }
     } catch (error) {
@@ -565,7 +640,7 @@ async function checkAdmin() {
                 'Authorization': `Bearer ${getToken()}`
             }
         });
-        
+
         if (response.ok) {
             const userData = await response.json();
             if (userData.data && userData.data.role && userData.data.role.includes('ADMIN')) {
@@ -659,7 +734,7 @@ async function changeInformation() {
                     user.email = infoemail;
                 }
             }
-        
+
             if (infophone.length > 0) {
                 if (!phoneIsValid(infophone)) {
                     document.querySelector('.inforphone-error').innerHTML = 'Vui lòng nhập lại số điện thoại!';
@@ -668,7 +743,7 @@ async function changeInformation() {
                     user.phone = infophone;
                 }
             }
-        
+
             if (infoaddress.length > 0) {
                 user.address = infoaddress;
             }
@@ -765,7 +840,7 @@ async function changePassword() {
                 }
                 toast({ title: 'Error', message: errorMessage || 'Đã xảy ra lỗi khi đổi mật khẩu.', type: 'error', duration: 3000 });
             }
-            
+
         } catch (error) {
             console.error('Lỗi khi gửi yêu cầu:', error);
             toast({ title: 'Error', message: 'Đã xảy ra lỗi khi đổi mật khẩu.', type: 'error', duration: 3000 });
@@ -773,73 +848,111 @@ async function changePassword() {
     }
 }
 
-function getProductInfo(id) {
-    let products = JSON.parse(localStorage.getItem('products'));
+async function getProductInfo(id) {
+    const products = await getProductData();
     return products.find(item => {
-        return item.id == id;
+        return item._id == id;
     })
 }
 
 // Quan ly don hang
-function renderOrderProduct() {
-    let currentUser = JSON.parse(localStorage.getItem('currentuser'));
-    let order = localStorage.getItem('order') ? JSON.parse(localStorage.getItem('order')) : [];
-    let orderHtml = "";
-    let arrDonHang = [];
-    for (let i = 0; i < order.length; i++) {
-        if (order[i].khachhang === currentUser.phone) {
-            arrDonHang.push(order[i]);
-        }
-    }
-    if (arrDonHang.length == 0) {
-        orderHtml = `<div class="empty-order-section"><img src="./assets/img/empty-order.jpg" alt="" class="empty-order-img"><p>Chưa có đơn hàng nào</p></div>`;
-    } else {
-        arrDonHang.forEach(item => {
-            let productHtml = `<div class="order-history-group">`;
-            let chiTietDon = getOrderDetails(item.id);
-            chiTietDon.forEach(sp => {
-                let infosp = getProductInfo(sp.id);
-                productHtml += `<div class="order-history">
-                    <div class="order-history-left">
-                        <img src="${infosp.img}" alt="">
-                        <div class="order-history-info">
-                            <h4>${infosp.title}!</h4>
-                            <p class="order-history-note"><i class="fa-light fa-pen"></i> ${sp.note}</p>
-                            <p class="order-history-quantity">x${sp.soluong}</p>
-                        </div>
-                    </div>
-                    <div class="order-history-right">
-                        <div class="order-history-price">
-                            <span class="order-history-current-price">${vnd(sp.price)}</span>
-                        </div>                         
-                    </div>
-                </div>`;
-            });
-            let textCompl = item.trangthai == 1 ? "Đã xử lý" : "Đang xử lý";
-            let classCompl = item.trangthai == 1 ? "complete" : "no-complete"
-            productHtml += `<div class="order-history-control">
-                <div class="order-history-status">
-                    <span class="order-history-status-sp ${classCompl}">${textCompl}</span>
-                    <button id="order-history-detail" onclick="detailOrder('${item.id}')"><i class="fa-regular fa-eye"></i> Xem chi tiết</button>
-                </div>
-                <div class="order-history-total">
-                    <span class="order-history-total-desc">Tổng tiền: </span>
-                    <span class="order-history-toltal-price">${vnd(item.tongtien)}</span>
-                </div>
-            </div>`
-            productHtml += `</div>`;
-            orderHtml += productHtml;
+async function renderOrderProduct() {
+    try {
+        // Gọi API để lấy thông tin người dùng hiện tại
+        const userResponse = await fetch('http://localhost:3000/api/v1/auth/me', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${getToken()}`
+            }
         });
+
+        if (userResponse.ok) {
+            // Lấy dữ liệu người dùng từ phản hồi API
+            const userData = await userResponse.json();
+            const userId = userData.data._id; // Lấy user id từ dữ liệu đã lấy
+
+            // Gọi API để lấy tất cả đơn hàng
+            const orderResponse = await fetch('http://localhost:3000/api/v1/orders', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${getToken()}`
+                }
+            });
+
+            if (orderResponse.ok) {
+                const orders = await orderResponse.json();
+                let orderHtml = "";
+
+                // Lọc ra các đơn hàng thuộc về người dùng hiện tại
+                const userOrders = orders.filter(order => order.user?._id === userId);
+
+                if (userOrders.length === 0) {
+                    orderHtml = `<div class="empty-order-section"><img src="./assets/img/empty-order.jpg" alt="" class="empty-order-img"><p>Chưa có đơn hàng nào</p></div>`;
+                } else {
+                    for (const item of userOrders) {
+                        let productHtml = `<div class="order-history-group">`;
+                        for (const sp of item.items) {
+                            // Lấy thông tin sản phẩm từ hàm getProductInfo
+                            const imageUrl = sp.product.images[0].url;
+
+                            // Kiểm tra nếu sản phẩm tồn tại
+                            
+                                // Tạo HTML cho mỗi sản phẩm trong đơn hàng
+                                productHtml += `<div class="order-history">
+                                    <div class="order-history-left">
+                                        <img src="${imageUrl}" alt=""> 
+                                        <div class="order-history-info">
+                                            <h4>${sp.product.name}</h4>
+                                            <p class="order-history-note"><i class="fa-light fa-pen"></i> ${item.note}</p>
+                                            <p class="order-history-quantity">x${sp.quantity}</p>
+                                        </div>
+                                    </div>
+                                    <div class="order-history-right">
+                                        <div class="order-history-price">
+                                            <span class="order-history-current-price">${vnd(sp.price)}</span>
+                                        </div>                         
+                                    </div>
+                                </div>`;
+                            
+                        }
+                        let textCompl = item.status == 'Đang xử lý' ? "Đã xử lý" : "Đang chờ xử lý";
+                        let classCompl = item.status == 'Đang xử lý' ? "complete" : "no-complete";
+                        productHtml += `<div class="order-history-control">
+                            <div class="order-history-status">
+                                <span class="order-history-status-sp ${classCompl}">${textCompl}</span>
+                                <button id="order-history-detail" onclick="detailOrder('${item._id}')"><i class="fa-regular fa-eye"></i> Xem chi tiết</button>
+                            </div>
+                            <div class="order-history-total">
+                                <span class="order-history-total-desc">Tổng tiền: </span>
+                                <span class="order-history-toltal-price">${vnd(item.totalAmount)}</span>
+                            </div>
+                        </div>`;
+                        productHtml += `</div>`;
+                        orderHtml += productHtml;
+                    }
+                }
+                document.querySelector(".order-history-section").innerHTML = orderHtml;
+            } else {
+                // Xử lý khi có lỗi khi gọi API lấy đơn hàng
+                console.error('Đã có lỗi khi gọi API lấy đơn hàng.');
+            }
+        } else {
+            // Xử lý khi có lỗi khi gọi API lấy thông tin người dùng
+            console.error('Đã có lỗi khi gọi API lấy thông tin người dùng.');
+        }
+    } catch (error) {
+        // Xử lý khi có lỗi không xác định
+        console.error('Đã có lỗi không xác định khi thực hiện render đơn hàng.', error);
     }
-    document.querySelector(".order-history-section").innerHTML = orderHtml;
 }
+
 
 // Get Order Details
 function getOrderDetails(madon) {
-    let orderDetails = localStorage.getItem("orderDetails") ? JSON.parse(localStorage.getItem("orderDetails")) : [];
+    let orderDetails = sessionStorage.getItem("orderDetails") ? JSON.parse(sessionStorage.getItem("orderDetails")) : [];
     let ctDon = [];
     orderDetails.forEach(item => {
-        if(item.madon == madon) {
+        if (item.madon == madon) {
             ctDon.push(item);
         }
     });
@@ -858,40 +971,77 @@ function formatDate(date) {
 }
 
 // Xem chi tiet don hang
-function detailOrder(id) {
-    let order = JSON.parse(localStorage.getItem("order"));
-    let detail = order.find(item => {
-        return item.id == id;
-    })
-    document.querySelector(".modal.detail-order").classList.add("open");
-    let detailOrderHtml = `<ul class="detail-order-group">
-        <li class="detail-order-item">
-            <span class="detail-order-item-left"><i class="fa-light fa-calendar-days"></i> Ngày đặt hàng</span>
-            <span class="detail-order-item-right">${formatDate(detail.thoigiandat)}</span>
-        </li>
-        <li class="detail-order-item">
-            <span class="detail-order-item-left"><i class="fa-light fa-truck"></i> Hình thức giao</span>
-            <span class="detail-order-item-right">${detail.hinhthucgiao}</span>
-        </li>
-        <li class="detail-order-item">
-            <span class="detail-order-item-left"><i class="fa-light fa-clock"></i> Ngày nhận hàng</span>
-            <span class="detail-order-item-right">${(detail.thoigiangiao == "" ? "" : (detail.thoigiangiao + " - ")) + formatDate(detail.ngaygiaohang)}</span>
-        </li>
-        <li class="detail-order-item">
-            <span class="detail-order-item-left"><i class="fa-light fa-location-dot"></i> Địa điểm nhận</span>
-            <span class="detail-order-item-right">${detail.diachinhan}</span>
-        </li>
-        <li class="detail-order-item">
-            <span class="detail-order-item-left"><i class="fa-thin fa-person"></i> Người nhận</span>
-            <span class="detail-order-item-right">${detail.tenguoinhan}</span>
-        </li>
-        <li class="detail-order-item">
-            <span class="detail-order-item-left"><i class="fa-light fa-phone"></i> Số điện thoại nhận</span>
-            <span class="detail-order-item-right">${detail.sdtnhan}</span>
-        </li>
-    </ul>`
-    document.querySelector(".detail-order-content").innerHTML = detailOrderHtml;
+async function detailOrder(id) {
+    try {
+        // Gọi API để lấy thông tin người dùng hiện tại
+        const responseUser = await fetch('http://localhost:3000/api/v1/auth/me', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${getToken()}`
+            }
+        });
+
+        if (responseUser.ok) {
+           
+            // Gọi API để lấy chi tiết đơn hàng
+            const responseOrder = await fetch(`http://localhost:3000/api/v1/orders/${id}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${getToken()}`
+                }
+            });
+
+            if (responseOrder.ok) {
+                // Lấy dữ liệu chi tiết đơn hàng từ dữ liệu trả về
+                const orderData = await responseOrder.json();
+                const detail = orderData.data[0]; // Lấy dữ liệu từ mảng data
+
+                // Tạo HTML để hiển thị thông tin chi tiết đơn hàng
+                document.querySelector(".modal.detail-order").classList.add("open");
+                let detailOrderHtml = `<ul class="detail-order-group">
+                    <li class="detail-order-item">
+                        <span class="detail-order-item-left"><i class="fa-light fa-calendar-days"></i> Ngày đặt hàng</span>
+                        <span class="detail-order-item-right">${formatDate(detail.createdAt)}</span>
+                    </li>
+                    <li class="detail-order-item">
+                        <span class="detail-order-item-left"><i class="fa-light fa-truck"></i> Hình thức giao</span>
+                        <span class="detail-order-item-right">${detail.type}</span>
+                    </li>
+                    <li class="detail-order-item">
+                        <span class="detail-order-item-left"><i class="fa-light fa-clock"></i> Ngày nhận hàng</span>
+                        <span class="detail-order-item-right">${(detail.shiptime == "" ? "" : (detail.shiptime + " - ")) + formatDate(detail.updatedAt)}</span>
+                    </li>
+                    <li class="detail-order-item">
+                        <span class="detail-order-item-left"><i class="fa-light fa-location-dot"></i> Địa điểm nhận</span>
+                        <span class="detail-order-item-right">${detail.address}</span>
+                    </li>
+                    <li class="detail-order-item">
+                        <span class="detail-order-item-left"><i class="fa-thin fa-person"></i> Người nhận</span>
+                        <span class="detail-order-item-right">${detail.client}</span>
+                    </li>
+                    <li class="detail-order-item">
+                        <span class="detail-order-item-left"><i class="fa-light fa-phone"></i> Số điện thoại nhận</span>
+                        <span class="detail-order-item-right">${detail.phonenum}</span>
+                    </li>
+                </ul>`;
+
+                // Hiển thị thông tin chi tiết đơn hàng trong modal
+                document.querySelector(".detail-order-content").innerHTML = detailOrderHtml;
+            } else {
+                // Xử lý khi có lỗi khi gọi API lấy chi tiết đơn hàng
+                console.error('Đã có lỗi khi gọi API lấy chi tiết đơn hàng.');
+            }
+        } else {
+            // Xử lý khi có lỗi khi gọi API lấy thông tin người dùng
+            console.error('Đã có lỗi khi gọi API lấy thông tin người dùng.');
+        }
+    } catch (error) {
+        // Xử lý khi có lỗi không xác định
+        console.error('Đã có lỗi không xác định khi thực hiện lấy chi tiết đơn hàng.', error);
+    }
 }
+
+
 
 // Create id order 
 function createId(arr) {
@@ -919,7 +1069,7 @@ const headerNav = document.querySelector(".header-bottom");
 let lastScrollY = window.scrollY;
 
 window.addEventListener("scroll", () => {
-    if(lastScrollY < window.scrollY) {
+    if (lastScrollY < window.scrollY) {
         headerNav.classList.add("hide")
     } else {
         headerNav.classList.remove("hide")
@@ -931,7 +1081,7 @@ window.addEventListener("scroll", () => {
 function renderProducts(showProduct) {
     let productHtml = '';
     if (showProduct.length === 0) {
-        console.log(showProduct.length);
+
         document.getElementById("home-title").style.display = "none";
         productHtml = `<div class="no-result">
             <div class="no-result-h">Tìm kiếm không có kết quả</div>
@@ -971,49 +1121,57 @@ function renderProducts(showProduct) {
 }
 
 
-function searchProducts(mode) {
-    let valeSearchInput = document.querySelector('.form-search-input').value;
-    let valueCategory = document.getElementById("advanced-search-category-select").value;
-    let minPrice = document.getElementById("min-price").value;
-    let maxPrice = document.getElementById("max-price").value;
-    if(parseInt(minPrice) > parseInt(maxPrice) && minPrice != "" && maxPrice != "") {
-        alert("Giá đã nhập sai !");
+async function searchProducts(mode) {
+    try {
+        // Lấy dữ liệu từ API
+        const products = await getProductData();
+
+        let valeSearchInput = document.querySelector('.form-search-input').value;
+        let valueCategory = document.getElementById("advanced-search-category-select").value;
+        let minPrice = document.getElementById("min-price").value;
+        let maxPrice = document.getElementById("max-price").value;
+        if (parseInt(minPrice) > parseInt(maxPrice) && minPrice != "" && maxPrice != "") {
+            alert("Giá đã nhập sai !");
+        }
+
+        let result = valueCategory == "Tất cả" ? products : products.filter((item) => {
+            return item.category == valueCategory;
+        });
+
+        result = valeSearchInput == "" ? result : result.filter(item => {
+            return item.name.toString().toUpperCase().includes(valeSearchInput.toString().toUpperCase());
+        })
+
+        if (minPrice == "" && maxPrice != "") {
+            result = result.filter((item) => item.price <= maxPrice);
+        } else if (minPrice != "" && maxPrice == "") {
+            result = result.filter((item) => item.price >= minPrice);
+        } else if (minPrice != "" && maxPrice != "") {
+            result = result.filter((item) => item.price <= maxPrice && item.price >= minPrice);
+        }
+
+        document.getElementById("home-service").scrollIntoView();
+        switch (mode) {
+            case 0:
+                // Không cần thay đổi vì đã lấy dữ liệu mới từ API
+                document.querySelector('.form-search-input').value = "";
+                document.getElementById("advanced-search-category-select").value = "Tất cả";
+                document.getElementById("min-price").value = "";
+                document.getElementById("max-price").value = "";
+                break;
+            case 1:
+                result.sort((a, b) => a.price - b.price)
+                break;
+            case 2:
+                result.sort((a, b) => b.price - a.price)
+                break;
+        }
+        showHomeProduct(result);
+    } catch (error) {
+        console.error('Error searching products:', error.message);
     }
-
-    let result = valueCategory == "Tất cả" ? productAll : productAll.filter((item) => {
-        return item.category == valueCategory;
-    });
-
-    result = valeSearchInput == "" ? result : result.filter(item => {
-        return item.title.toString().toUpperCase().includes(valeSearchInput.toString().toUpperCase());
-    })
-
-    if(minPrice == "" && maxPrice != "") {
-        result = result.filter((item) => item.price <= maxPrice);
-    } else if (minPrice != "" && maxPrice == "") {
-        result = result.filter((item) => item.price >= minPrice);
-    } else if(minPrice != "" && maxPrice != "") {
-        result = result.filter((item) => item.price <= maxPrice && item.price >= minPrice);
-    }
-
-    document.getElementById("home-service").scrollIntoView();
-    switch (mode){
-        case 0:
-            result = JSON.parse(localStorage.getItem('products'));;
-            document.querySelector('.form-search-input').value = "";
-            document.getElementById("advanced-search-category-select").value = "Tất cả";
-            document.getElementById("min-price").value = "";
-            document.getElementById("max-price").value = "";
-            break;
-        case 1:
-            result.sort((a,b) => a.price - b.price)
-            break;
-        case 2:
-            result.sort((a,b) => b.price - a.price)
-            break;
-    }
-    showHomeProduct(result)
 }
+
 
 // Phân trang 
 let perPage = 12;
@@ -1037,7 +1195,11 @@ function showHomeProduct(products) {
 }
 
 
-window.onload = showHomeProduct(JSON.parse(localStorage.getItem('products')))
+window.onload = async function () {
+    const products = await getProductData();
+    showHomeProduct(products);
+};
+
 
 function setupPagination(productAll, perPage) {
     document.querySelector('.page-nav-list').innerHTML = '';
@@ -1067,17 +1229,28 @@ function paginationChange(page, productAll, currentPage) {
 }
 
 // Hiển thị chuyên mục
-function showCategory(category) {
-    document.getElementById('trangchu').classList.remove('hide');
-    document.getElementById('account-user').classList.remove('open');
-    document.getElementById('order-history').classList.remove('open');
-    let productSearch = productAll.filter(value => {
-        return value.category.toString().toUpperCase().includes(category.toUpperCase());
-    })
-    let currentPageSeach = 1;
-    displayList(productSearch, perPage, currentPageSeach);
-    setupPagination(productSearch, perPage, currentPageSeach);
-    document.getElementById("home-title").scrollIntoView();
+async function showCategory(category) {
+    try {
+        // Lấy dữ liệu sản phẩm từ API
+        const products = await getProductData();
+
+        document.getElementById('trangchu').classList.remove('hide');
+        document.getElementById('account-user').classList.remove('open');
+        document.getElementById('order-history').classList.remove('open');
+
+        // Lọc các sản phẩm thuộc danh mục được chọn
+        let productSearch = products.filter(value => {
+            return value.category.name.toString().toUpperCase().includes(category.toUpperCase());
+        });
+
+        let currentPageSeach = 1;
+        displayList(productSearch, perPage, currentPageSeach);
+        setupPagination(productSearch, perPage, currentPageSeach);
+        document.getElementById("home-title").scrollIntoView();
+    } catch (error) {
+        console.error('Error showing category:', error.message);
+    }
 }
+
 
 
