@@ -98,6 +98,7 @@ document.getElementById("amount-user").innerHTML = getAmoumtUser();
 document.getElementById("amount-product").innerHTML = getAmoumtProduct();
 document.getElementById("doanh-thu").innerHTML = vnd(getMoney());
 
+
 // Doi sang dinh dang tien VND
 function vnd(price) {
     return price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
@@ -140,37 +141,52 @@ function paginationChange(page, productAll, currentPage) {
     })
     return node;
 }
+// Gọi API và đổ dữ liệu vào hàm showProductArr
+fetch('http://localhost:3000/api/v1/products')
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    return response.json(); // Chuyển đổi phản hồi sang JSON
+  })
+  .then(data => {
+    // Gọi hàm showProductArr với dữ liệu từ API
+    showProductArr(data);
+  })
+  .catch(error => {
+    console.error('There was a problem with the fetch operation:', error);
+  });
 
 // Hiển thị danh sách sản phẩm 
 function showProductArr(arr) {
     let productHtml = "";
-    if(arr.length == 0) {
+    if (arr.length === 0) {
         productHtml = `<div class="no-result"><div class="no-result-i"><i class="fa-light fa-face-sad-cry"></i></div><div class="no-result-h">Không có sản phẩm để hiển thị</div></div>`;
     } else {
         arr.forEach(product => {
-            let btnCtl = product.status == 1 ? 
-            `<button class="btn-delete" onclick="deleteProduct(${product.id})"><i class="fa-regular fa-trash"></i></button>` :
-            `<button class="btn-delete" onclick="changeStatusProduct(${product.id})"><i class="fa-regular fa-eye"></i></button>`;
+            let btnCtl = product.published.length > 0 ? 
+                `<button class="btn-delete" onclick="deleteProduct('${product._id}')"><i class="fa-regular fa-trash"></i></button>` :
+                `<button class="btn-delete" onclick="changeStatusProduct('${product._id}')"><i class="fa-regular fa-eye"></i></button>`;
             productHtml += `
             <div class="list">
-                    <div class="list-left">
-                    <img src="${product.img}" alt="">
+                <div class="list-left">
+                    <img src="${product.images[0].url}" alt="${product.images[0].alt}">
                     <div class="list-info">
-                        <h4>${product.title}</h4>
-                        <p class="list-note">${product.desc}</p>
-                        <span class="list-category">${product.category}</span>
+                        <h4>${product.name}</h4>
+                        <p class="list-note">${product.description}</p>
+                        <span class="list-category">${product.category.name}</span>
                     </div>
                 </div>
                 <div class="list-right">
                     <div class="list-price">
-                    <span class="list-current-price">${vnd(product.price)}</span>                   
+                        <span class="list-current-price">${vnd(product.price)}</span>                   
                     </div>
                     <div class="list-control">
-                    <div class="list-tool">
-                        <button class="btn-edit" onclick="editProduct(${product.id})"><i class="fa-light fa-pen-to-square"></i></button>
-                        ${btnCtl}
-                    </div>                       
-                </div>
+                        <div class="list-tool">
+                            <button class="btn-edit" onclick="editProduct('${product._id}')"><i class="fa-light fa-pen-to-square"></i></button>
+                            ${btnCtl}
+                        </div>                       
+                    </div>
                 </div> 
             </div>`;
         });
@@ -178,26 +194,68 @@ function showProductArr(arr) {
     document.getElementById("show-product").innerHTML = productHtml;
 }
 
+
 function showProduct() {
-    let selectOp = document.getElementById('the-loai').value;
-    let valeSearchInput = document.getElementById('form-search-product').value;
-    let products = localStorage.getItem("products") ? JSON.parse(localStorage.getItem("products")) : [];
+    // Lấy thể loại từ API
+    fetch('http://localhost:3000/api/v1/categories')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(categories => {
+            // Hiển thị thể loại sản phẩm trong dropdown
+            let selectOp = document.getElementById('the-loai');
+            selectOp.innerHTML = ''; // Xóa các lựa chọn hiện có
+            let defaultOption = document.createElement('option');
+            defaultOption.text = 'Tất cả';
+            selectOp.add(defaultOption);
 
-    if(selectOp == "Tất cả") {
-        result = products.filter((item) => item.status == 1);
-    } else if(selectOp == "Đã xóa") {
-        result = products.filter((item) => item.status == 0);
-    } else {
-        result = products.filter((item) => item.category == selectOp);
-    }
+            categories.forEach(category => {
+                let option = document.createElement('option');
+                option.value = category.name; // Giả sử tên thể loại được sử dụng làm giá trị
+                option.text = category.name; // Giả sử tên thể loại được hiển thị làm văn bản
+                selectOp.add(option);
+            });
 
-    result = valeSearchInput == "" ? result : result.filter(item => {
-        return item.title.toString().toUpperCase().includes(valeSearchInput.toString().toUpperCase());
-    })
+            // Lấy các giá trị nhập khác
+            let valeSearchInput = document.getElementById('form-search-product').value;
 
-    displayList(result, perPage, currentPage);
-    setupPagination(result, perPage, currentPage);
+            // Fetch dữ liệu sản phẩm từ API
+            fetch('http://localhost:3000/api/v1/products')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(products => {
+                    // Lọc sản phẩm dựa trên thể loại và từ khóa tìm kiếm
+                    let result = products;
+                    if(selectOp.value != "Tất cả") {
+                        result = result.filter((item) => item.category == selectOp.value);
+                    }
+                    result = valeSearchInput == "" ? result : result.filter(item => {
+                        return item.title.toString().toUpperCase().includes(valeSearchInput.toString().toUpperCase());
+                    });
+
+                    // Hiển thị sản phẩm đã lọc và thiết lập phân trang
+                    displayList(result, perPage, currentPage);
+                    setupPagination(result, perPage, currentPage);
+                })
+                .catch(error => {
+                    console.error('There was a problem with fetching products:', error);
+                });
+        })
+        .catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
+        });
 }
+
+document.getElementById('the-loai').addEventListener('change', function() {
+    showProduct();
+});
 
 function cancelSearchProduct() {
     let products = localStorage.getItem("products") ? JSON.parse(localStorage.getItem("products")).filter(item => item.status == 1) : [];
@@ -209,6 +267,7 @@ function cancelSearchProduct() {
 
 window.onload = showProduct();
 
+// Hàm tạo ID
 function createId(arr) {
     let id = arr.length;
     let check = arr.find((item) => item.id == id);
@@ -410,30 +469,46 @@ function formatDate(date) {
 }
 
 // Show order
-function showOrder(arr) {
-    let orderHtml = "";
-    if(arr.length == 0) {
-        orderHtml = `<td colspan="6">Không có dữ liệu</td>`
-    } else {
-        arr.forEach((item) => {
-            let status = item.trangthai == 0 ? `<span class="status-no-complete">Chưa xử lý</span>` : `<span class="status-complete">Đã xử lý</span>`;
-            let date = formatDate(item.thoigiandat);
-            orderHtml += `
-            <tr>
-            <td>${item.id}</td>
-            <td>${item.khachhang}</td>
-            <td>${date}</td>
-            <td>${vnd(item.tongtien)}</td>                               
-            <td>${status}</td>
-            <td class="control">
-            <button class="btn-detail" id="" onclick="detailOrder('${item.id}')"><i class="fa-regular fa-eye"></i> Chi tiết</button>
-            </td>
-            </tr>      
-            `;
+function showOrder() {
+    fetch('http://localhost:3000/api/v1/orders')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            let orderHtml = "<table><thead><tr><th>ID</th><th>User</th><th>Date</th><th>Total Amount</th><th>Status</th><th>Action</th></tr></thead><tbody>";
+
+            if (data.length === 0) {
+                orderHtml += `<tr><td colspan="6">Không có dữ liệu</td></tr>`;
+            } else {
+                data.forEach((item) => {
+                    let status = item.status === "Đang chờ xử lý" ? `<span class="status-no-complete">Chưa xử lý</span>` : `<span class="status-complete">Đã xử lý</span>`;
+                    let date = formatDate(item.createdAt);
+                    orderHtml += `
+                        <tr>
+                            <td>${item._id}</td>
+                            <td>${item.user.username}</td>
+                            <td>${date}</td>
+                            <td>${vnd(item.totalAmount)}</td>                               
+                            <td>${status}</td>
+                            <td class="control">
+                                <button class="btn-detail" onclick="detailOrder('${item._id}')"><i class="fa-regular fa-eye"></i> Chi tiết</button>
+                            </td>
+                        </tr>`;
+                });
+            }
+
+            orderHtml += "</tbody></table>";
+            document.getElementById("showOrder").innerHTML = orderHtml;
+        })
+        .catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
         });
-    }
-    document.getElementById("showOrder").innerHTML = orderHtml;
 }
+
+
 
 let orders = localStorage.getItem("order") ? JSON.parse(localStorage.getItem("order")) : [];
 window.onload = showOrder(orders);
