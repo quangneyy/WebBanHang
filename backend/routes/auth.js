@@ -7,11 +7,17 @@ var checkUser = require('../validators/auth')
 var bcrypt = require("bcrypt")
 var checkLogin = require('../middlewares/checkLogin');
 const changpassword = require('../validators/changpassword');
+const resetPassword = require('../validators/resetPassword');
 const sendMail = require('../helpers/sendMail')
 require('express-async-errors')
 
 
-router.post('/resetpassword/:token',async function (req, res, next) {
+router.post('/resetpassword/:token', resetPassword(), async function (req, res, next) {
+  let result = validationResult(req);
+  if (result.errors.length > 0) {
+    Res.ResRend(res, false, result.errors)
+    return;
+  }
   let user = await userModel.findOne({
     tokenResetPassword: req.params.token
   })
@@ -40,7 +46,7 @@ router.post('/forgotpassword', async function (req, res, next) {
   }
   let token = user.genResetToken();
   await user.save();
-  let url = `http://localhost:3000/auth/resetpassword/${token}`;
+  let url = `http://127.0.0.1:5501/forgot.html?token=${token}`;
   await sendMail(user.email,url);
   Res.ResRend(res, true, "Gửi email thành công")
 });

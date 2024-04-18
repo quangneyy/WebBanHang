@@ -4,6 +4,10 @@
 @font-face{font-family:'SFProDisplay';src:url('../font/SFPRODISPLAY/SFProDisplay-Bold.ttf') format('truetype');font-weight:bold;font-display:fallback}
 @font-face{font-family:'SFProDisplay';src:url('../font/SFPRODISPLAY/SFProDisplay-Semibold.ttf') format('truetype');font-weight:600;font-display:fallback}
 @font-face{font-family:'SFProDisplay';src:url('../font/SFPRODISPLAY/SFProDisplay-Heavy.ttf') format('truetype');font-weight:800;font-display:fallback}
+.form-content.login,
+.form-content.forgot {
+    display: none;
+}
 
 :root {
     --white: #fff;
