@@ -432,36 +432,75 @@ function closeSearchMb() {
 // Chuyen doi qua lai SignUp & Login 
 let signup = document.querySelector('.signup-link');
 let login = document.querySelector('.login-link');
+let signup2 = document.querySelector('.signup-link-2');
+let login2 = document.querySelector('.login-link-2');
+let forgot = document.querySelector('.forgot-link');
 let container = document.querySelector('.signup-login .modal-container');
+
 login.addEventListener('click', () => {
+    document.querySelector('.form-content.login').style.display = "block";
+    document.querySelector('.form-content.sign-up').style.display = "none";
+    document.querySelector('.form-content.forgot').style.display = "none";
     container.classList.add('active');
 })
 
 signup.addEventListener('click', () => {
+    document.querySelector('.form-content.sign-up').style.display = "block";
+    document.querySelector('.form-content.login').style.display = "none";
+    document.querySelector('.form-content.forgot').style.display = "none";
     container.classList.remove('active');
 })
+login2.addEventListener('click', () => {
+    document.querySelector('.form-content.login').style.display = "block";
+    document.querySelector('.form-content.sign-up').style.display = "none";
+    document.querySelector('.form-content.forgot').style.display = "none";
+    container.classList.add('active');
+})
+
+signup2.addEventListener('click', () => {
+    document.querySelector('.form-content.sign-up').style.display = "block";
+    document.querySelector('.form-content.login').style.display = "none";
+    document.querySelector('.form-content.forgot').style.display = "none";
+    container.classList.remove('active');
+})
+forgot.addEventListener('click', () => {
+    document.querySelector('.form-content.forgot').style.display = "block";
+    document.querySelector('.form-content.login').style.display = "none";
+    document.querySelector('.form-content.sign-up').style.display = "none";
+    container.classList.add('active');
+})
+
 
 let signupbtn = document.getElementById('signup');
 let loginbtn = document.getElementById('login');
-let formsg = document.querySelector('.modal.signup-login')
+let formsg = document.querySelector('.modal.signup-login');
+
 signupbtn.addEventListener('click', () => {
+    document.querySelector('.form-content.sign-up').style.display = "block";
+    document.querySelector('.form-content.login').style.display = "none";
+    document.querySelector('.form-content.forgot').style.display = "none";
     formsg.classList.add('open');
     container.classList.remove('active');
-    body.style.overflow = "hidden";
-})
+    document.body.style.overflow = "hidden";
+});
 
 loginbtn.addEventListener('click', () => {
     document.querySelector('.form-message-check-login').innerHTML = '';
+    document.querySelector('.form-content.login').style.display = "block";
+    document.querySelector('.form-content.sign-up').style.display = "none";
+    document.querySelector('.form-content.forgot').style.display = "none";
     formsg.classList.add('open');
     container.classList.add('active');
-    body.style.overflow = "hidden";
-})
+    document.body.style.overflow = "hidden";
+});
+
 
 // Dang nhap & Dang ky
 
 // Chức năng đăng ký
 let signupButton = document.getElementById('signup-button');
 let loginButton = document.getElementById('login-button');
+let forgotButton = document.getElementById('forgot-button');
 signupButton.addEventListener('click', async () => {
     event.preventDefault();
     let usernameUser = document.getElementById('username').value;
@@ -590,6 +629,37 @@ loginButton.addEventListener('click', async () => {
         }
     }
 });
+
+forgotButton.addEventListener('click', async () => {
+    event.preventDefault();
+    let emailForgot = document.getElementById('email-forgot').value;
+
+    if (emailForgot.length === 0) {
+        document.querySelector('.form-message-email-forgot').innerHTML = 'Vui lòng nhập email';
+    } else {
+        document.querySelector('.form-message-email-forgot').innerHTML = '';
+
+        try {
+            const response = await fetch('http://localhost:3000/api/v1/auth/forgotpassword', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email: emailForgot })
+            });
+
+            const responseData = await response.json();
+            if (response.ok) {
+                toast({ title: 'Success', message: responseData.data, type: 'success', duration: 3000 });
+            } else {
+                toast({ title: 'Error', message: responseData.data, type: 'error', duration: 3000 });
+            }
+        } catch (error) {
+            toast({ title: 'Lỗi', message: 'Đã xảy ra lỗi khi gửi yêu cầu quên mật khẩu.', type: 'error', duration: 3000 });
+        }
+    }
+});
+
 
 // Kiểm tra xem có tài khoản đăng nhập không ?
 async function kiemtradangnhap() {
@@ -772,10 +842,8 @@ async function changeInformation() {
     }
 }
 
-
 // Đổi mật khẩu 
 async function changePassword() {
-    let currentUser = JSON.parse(localStorage.getItem("currentuser"));
     let passwordCur = document.getElementById('password-cur-info');
     let passwordAfter = document.getElementById('password-after-info');
     let passwordConfirm = document.getElementById('password-comfirm-info');
