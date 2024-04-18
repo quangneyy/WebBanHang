@@ -45,6 +45,8 @@ router.post('/', checkLogin, checkRole("ADMIN"), async function (req, res, next)
       description: req.body.description,
       category: req.body.category,
       images: req.body.images,
+      price: req.body.price,
+      quantity: req.body.quantity
     })
     await newproduct.save();
     Res.ResRend(res, true, newproduct);
