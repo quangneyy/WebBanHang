@@ -821,6 +821,28 @@ function signUpFormReset() {
     document.querySelector('.form-message-password').innerHTML = '';
 }
 
+// Gọi API và đổ dữ liệu vào hàm showUserArr
+fetch('http://localhost:3000/api/v1/users', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${getToken()}`
+            }
+})
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    return response.json(); // Chuyển đổi phản hồi sang JSON
+  })
+  .then(data => {
+    // Gọi hàm showProductArr với dữ liệu từ API
+    showProductArr(data);
+  })
+  .catch(error => {
+    console.error('There was a problem with the fetch operation:', error);
+  });
+
+
 function showUserArr(arr) {
     let accountHtml = '';
     if(arr.length == 0) {
