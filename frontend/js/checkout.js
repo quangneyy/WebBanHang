@@ -159,7 +159,6 @@ async function thanhtoanpage(option, product) {
         }
     });
     
-
     // Su kien khu nhan nut dat hang
     document.querySelector(".complete-checkout-btn").onclick = () => {
         switch (option) {
@@ -179,7 +178,7 @@ async function showProductCart() {
     let listOrder = document.getElementById("list-order-checkout");
     let listOrderHtml = '';
     for (const item of currentuser.cart) {
-        let product = await getProduct(item);
+        let product = await getProduct(item.id);
         listOrderHtml += `<div class="food-total">
             <div class="count">${item.quantity}x</div>
             <div class="info-food">
@@ -197,7 +196,7 @@ function showProductBuyNow(product) {
     let listOrderHtml = `<div class="food-total">
         <div class="count">${product.quantity}x</div>
         <div class="info-food">
-            <div class="name-food">${product.title}</div>
+            <div class="name-food">${product.name}</div>
         </div>
     </div>`;
     listOrder.innerHTML = listOrderHtml;
@@ -217,14 +216,13 @@ nutthanhtoan.addEventListener('click', () => {
 function dathangngay() {
     let productInfo = document.getElementById("product-detail-content");
     let datHangNgayBtn = productInfo.querySelector(".button-dathangngay");
-    datHangNgayBtn.onclick = () => {
-        if(sessionStorage.getItem('currentuser')) {
+    datHangNgayBtn.onclick = async () => {
+        if(getToken()) {
             let productId = datHangNgayBtn.getAttribute("data-product");
             let quantity = parseInt(productInfo.querySelector(".buttons_added .input-qty").value);
             let notevalue = productInfo.querySelector("#popup-detail-note").value;
             let ghichu = notevalue == "" ? "Không có ghi chú" : notevalue;
-            let products = JSON.parse(sessionStorage.getItem('products'));
-            let a = products.find(item => item.id == productId);
+            let a = await getProduct(productId);
             a.quantity = parseInt(quantity);
             a.note = ghichu;
             checkoutpage.classList.add('active');
@@ -267,7 +265,6 @@ async function xulyDathang(product) {
             // Đã đăng nhập
             const userData = await response.json();
             const userId = userData._id; // Lấy user id từ dữ liệu đã lấy
-            console.log(userId);
             // Hinh thuc giao & Dia chi nhan hang
             if (giaotannoi.classList.contains("active")) {
                 diachinhan = document.querySelector("#diachinhan").value;
@@ -354,9 +351,9 @@ async function xulyDathang(product) {
                     }
 
                     const responseData = await response.json();
-                    console.log(responseData);
                     toast({ title: 'Thành công', message: 'Đặt hàng thành công !', type: 'success', duration: 1000 });
                     setTimeout(() => {
+                        sessionStorage.removeItem('currentuser');
                         window.location = "/";
                     }, 2000);
                 }
