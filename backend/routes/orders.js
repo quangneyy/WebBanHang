@@ -12,7 +12,7 @@ require('express-async-errors')
 
 const populateFields = [
   { path: "user", select: "_id username" },
-  { path: "items.product", select: "_id name" } 
+  { path: "items.product", select: "_id name images" } 
 ];
 
 router.get("/", async function (req, res, next) {
@@ -38,6 +38,7 @@ router.get('/:id', async function (req, res, next) {
 });
 
 router.post('/', checkLogin, checkProduct, async function (req, res, next) {
+  
   let session = null;
   try {
       session = await productModel.startSession();
@@ -55,7 +56,7 @@ router.post('/', checkLogin, checkProduct, async function (req, res, next) {
       }
 
       if (insufficientProducts.length > 0) {
-          throw { message: 'Sản phẩm không đủ số lượng', insufficientProducts };
+          throw { data: 'Sản phẩm không đủ số lượng', insufficientProducts };
       }
 
       let totalAmount = 0;
@@ -75,9 +76,17 @@ router.post('/', checkLogin, checkProduct, async function (req, res, next) {
           user: req.user.id,
           items: req.body.items,
           totalAmount: totalAmount,
+          des: req.body.des,
+          type:req.body.type,
+          shiptime:req.body.shiptime,
+          note:req.body.note,
+          address:req.body.address,
+          client:req.body.client,
+          phonenum:req.body.phonenum,
           status: req.body.status || 'Đang chờ xử lý',
           isPaid: req.body.isPaid || false
       });
+      
       await neworder.save();
 
       await session.commitTransaction();

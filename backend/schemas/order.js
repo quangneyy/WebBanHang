@@ -32,6 +32,13 @@ const orderSchema = new mongoose.Schema({
         enum: ['Đang chờ xử lý', 'Đang xử lý', 'Đã vận chuyển', 'Đã giao'],
         default: 'Đang chờ xử lý'
     },
+    note:String,
+    address:String,
+    client:String,
+    phonenum:String,
+    des:String,
+    type: String,
+    shiptime:String,
     isPaid: {
         type: Boolean,
         default: false 
