@@ -425,13 +425,13 @@
             <div class="modal-content">
                 <form action="" class="add-product-form">
                     <div class="modal-content-left">
-                        <!-- <img src="./assets/img/blank-image.png" alt="" class="upload-image-preview"> -->
-                        <!-- <div class="form-group file">
+                        <img src="./assets/img/blank-image.png" alt="" class="upload-image-preview">
+                        <div class="form-group file">
                             <label for="up-hinh-anh" class="form-label-file"><i
                                     class="fa-regular fa-cloud-arrow-up"></i>Chọn hình ảnh</label>
                             <input accept="image/jpeg, image/png, image/jpg" id="up-hinh-anh" name="up-hinh-anh"
                                 type="file" class="form-control" onchange="uploadImage(this)">
-                        </div> -->
+                        </div>
                         <div class="form-group">
                             <label for="ten-anh" class="form-label">Link Ảnh</label>
                             <input id="ten-anh" name="ten-anh" type="text" placeholder="Nhập tên món"
@@ -464,11 +464,12 @@
                             <textarea class="product-desc" id="mo-ta" placeholder="Nhập mô tả món ăn..."></textarea>
                             <span class="form-message"></span>
                         </div>
-                        <!-- <div class="form-group">
+                        <div class="form-group">
                             <label for="gia-giam" class="form-label">Giá giảm (nếu có)</label>
-                            <input id="gia-giam" name="gia-giam" type="text" placeholder="Nhập giá giảm" class="form-control">
+                            <input id="gia-giam" name="gia-giam" type="text" placeholder="Nhập giá giảm"
+                                class="form-control">
                             <span class="form-message"></span>
-                        </div> -->
+                        </div>
                         <div class="form-group">
                             <label for="so-luong" class="form-label">Số lượng</label>
                             <input id="so-luong" name="so-luong" type="number" placeholder="Nhập số lượng"
@@ -490,56 +491,6 @@
         </div>
     </div>
 
-    <script>
-        // Lắng nghe sự kiện submit của form
-        document.querySelector('.add-product-form').addEventListener('submit', function (event) {
-            event.preventDefault(); // Ngăn chặn hành vi mặc định của form (không gửi yêu cầu)
-
-            // Lấy các giá trị từ các trường trong form
-            const linkAnh = document.getElementById('ten-mon').value;
-            const tenMon = document.getElementById('ten-mon').value;
-            const danhMuc = document.getElementById('chon-mon').value;
-            const giaBan = document.getElementById('gia-moi').value;
-            const moTa = document.getElementById('mo-ta').value;
-            const soLuong = document.getElementById('so-luong').value;
-
-            // Tạo đối tượng dữ liệu JSON từ các giá trị thu thập được
-            const data = {
-                link_anh: linkAnh,
-                ten_mon: tenMon,
-                danh_muc: danhMuc,
-                gia_ban: giaBan,
-                mo_ta: moTa,
-                so_luong: soLuong
-            };
-
-            // Gửi yêu cầu POST đến API với dữ liệu JSON đã tạo
-            fetch('http://localhost:3000/api/v1/products', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Failed to add product');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    // Xử lý dữ liệu phản hồi (nếu cần)
-                    console.log('Product added successfully:', data);
-                    // Reset form sau khi thêm sản phẩm thành công
-                    document.querySelector('.add-product-form').reset();
-                })
-                .catch(error => {
-                    // Xử lý lỗi
-                    console.error('Error adding product:', error);
-                });
-        });
-
-    </script>
 
     <div class="modal detail-order">
         <div class="modal-container">
@@ -611,7 +562,7 @@
     </div>
     </div>
     <div id="toast"></div>
-    <script src="./js/admin.js"></script>
+    <script src="./js/admin.js" />
     <script src="./js/toast-message.js"></script>
 </body>
 
