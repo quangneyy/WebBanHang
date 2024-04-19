@@ -221,7 +221,7 @@
                         </tbody>
                     </table>
                 </div>
-                
+
                 <!-- </div> -->
             </div>
             <!-- Order  -->
@@ -286,22 +286,27 @@
                     <div class="admin-control-center">
                         <form action="" class="form-search">
                             <span class="search-btn"><i class="fa-light fa-magnifying-glass"></i></span>
-                            <input id="form-search-discount" type="text" class="form-search-input" placeholder="Tìm kiếm mã giảm giá..." oninput="showDiscount()">
+                            <input id="form-search-discount" type="text" class="form-search-input"
+                                placeholder="Tìm kiếm mã giảm giá..." oninput="showDiscount()">
                         </form>
                     </div>
                     <div class="admin-control-right">
                         <form action="" class="fillter-date">
                             <div>
                                 <label for="time-start">Từ</label>
-                                <input type="date" class="form-control-date" id="time-start-discount" onchange="showDiscount()">
+                                <input type="date" class="form-control-date" id="time-start-discount"
+                                    onchange="showDiscount()">
                             </div>
                             <div>
                                 <label for="time-end">Đến</label>
-                                <input type="date" class="form-control-date" id="time-end-discount" onchange="showDiscount()">
+                                <input type="date" class="form-control-date" id="time-end-discount"
+                                    onchange="showDiscount()">
                             </div>
-                        </form>      
-                        <button class="btn-reset-order" onclick="cancelSearchDiscount()"><i class="fa-light fa-arrow-rotate-right"></i></button>     
-                        <button id="btn-add-discount" class="btn-control-large" onclick="openCreateDiscount()"><i class="fa-light fa-plus"></i> <span>Thêm mã giảm giá</span></button>          
+                        </form>
+                        <button class="btn-reset-order" onclick="cancelSearchDiscount()"><i
+                                class="fa-light fa-arrow-rotate-right"></i></button>
+                        <button id="btn-add-discount" class="btn-control-large" onclick="openCreateDiscount()"><i
+                                class="fa-light fa-plus"></i> <span>Thêm mã giảm giá</span></button>
                     </div>
                 </div>
                 <div class="table">
@@ -324,7 +329,7 @@
                     </table>
                 </div>
             </div>
-            
+
             <div class="section">
                 <div class="admin-control">
                     <div class="admin-control-left">
@@ -428,8 +433,8 @@
                                 type="file" class="form-control" onchange="uploadImage(this)">
                         </div> -->
                         <div class="form-group">
-                            <label for="ten-mon" class="form-label">Link Ảnh</label>
-                            <input id="ten-mon" name="ten-mon" type="text" placeholder="Nhập tên món"
+                            <label for="ten-anh" class="form-label">Link Ảnh</label>
+                            <input id="ten-anh" name="ten-anh" type="text" placeholder="Nhập tên món"
                                 class="form-control">
                             <span class="form-message"></span>
                         </div>
@@ -437,7 +442,8 @@
                     <div class="modal-content-right">
                         <div class="form-group">
                             <label for="ten-mon" class="form-label">Tên món</label>
-                            <input id="ten-mon" name="ten-mon" type="text" placeholder="Nhập tên món" class="form-control">
+                            <input id="ten-mon" name="ten-mon" type="text" placeholder="Nhập tên món"
+                                class="form-control">
                             <span class="form-message"></span>
                         </div>
                         <div class="form-group">
@@ -449,7 +455,8 @@
                         </div>
                         <div class="form-group">
                             <label for="gia-moi" class="form-label">Giá bán</label>
-                            <input id="gia-moi" name="gia-moi" type="text" placeholder="Nhập giá bán" class="form-control">
+                            <input id="gia-moi" name="gia-moi" type="text" placeholder="Nhập giá bán"
+                                class="form-control">
                             <span class="form-message"></span>
                         </div>
                         <div class="form-group">
@@ -457,14 +464,15 @@
                             <textarea class="product-desc" id="mo-ta" placeholder="Nhập mô tả món ăn..."></textarea>
                             <span class="form-message"></span>
                         </div>
-                        <div class="form-group">
+                        <!-- <div class="form-group">
                             <label for="gia-giam" class="form-label">Giá giảm (nếu có)</label>
                             <input id="gia-giam" name="gia-giam" type="text" placeholder="Nhập giá giảm" class="form-control">
                             <span class="form-message"></span>
-                        </div>
+                        </div> -->
                         <div class="form-group">
                             <label for="so-luong" class="form-label">Số lượng</label>
-                            <input id="so-luong" name="so-luong" type="number" placeholder="Nhập số lượng" class="form-control">
+                            <input id="so-luong" name="so-luong" type="number" placeholder="Nhập số lượng"
+                                class="form-control">
                             <span class="form-message"></span>
                         </div>
                         <button class="form-submit btn-add-product-form add-product-e" id="add-product-button">
@@ -475,12 +483,64 @@
                             <i class="fa-light fa-pencil"></i>
                             <span>LƯU THAY ĐỔI</span>
                         </button>
-                    </div>                    
+                    </div>
                 </form>
             </div>
             </form>
         </div>
     </div>
+
+    <script>
+        // Lắng nghe sự kiện submit của form
+        document.querySelector('.add-product-form').addEventListener('submit', function (event) {
+            event.preventDefault(); // Ngăn chặn hành vi mặc định của form (không gửi yêu cầu)
+
+            // Lấy các giá trị từ các trường trong form
+            const linkAnh = document.getElementById('ten-mon').value;
+            const tenMon = document.getElementById('ten-mon').value;
+            const danhMuc = document.getElementById('chon-mon').value;
+            const giaBan = document.getElementById('gia-moi').value;
+            const moTa = document.getElementById('mo-ta').value;
+            const soLuong = document.getElementById('so-luong').value;
+
+            // Tạo đối tượng dữ liệu JSON từ các giá trị thu thập được
+            const data = {
+                link_anh: linkAnh,
+                ten_mon: tenMon,
+                danh_muc: danhMuc,
+                gia_ban: giaBan,
+                mo_ta: moTa,
+                so_luong: soLuong
+            };
+
+            // Gửi yêu cầu POST đến API với dữ liệu JSON đã tạo
+            fetch('http://localhost:3000/api/v1/products', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to add product');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Xử lý dữ liệu phản hồi (nếu cần)
+                    console.log('Product added successfully:', data);
+                    // Reset form sau khi thêm sản phẩm thành công
+                    document.querySelector('.add-product-form').reset();
+                })
+                .catch(error => {
+                    // Xử lý lỗi
+                    console.error('Error adding product:', error);
+                });
+        });
+
+    </script>
+
     <div class="modal detail-order">
         <div class="modal-container">
             <h3 class="modal-container-title">CHI TIẾT ĐƠN HÀNG</h3>
