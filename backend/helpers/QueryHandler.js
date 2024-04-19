@@ -68,7 +68,7 @@ module.exports = {
   
     GetPageAndLimit: function (req) {
       let page = req.query.page ? req.query.page : 1;
-      let limit = req.query.limit ? req.query.limit : 5;
+      let limit = req.query.limit ? req.query.limit : 100;
       return { page, limit };
     }
   };

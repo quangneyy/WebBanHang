@@ -1,3 +1,16 @@
+async function fetchCategories() {
+    try {
+        const response = await fetch('http://localhost:3000/api/v1/categories');
+        if (!response.ok) {
+            throw new Error('Failed to fetch categories');
+        }
+        const categories = await response.json();
+        return categories;
+    } catch (error) {
+        console.error('Error fetching categories:', error.message);
+        return [];
+    }
+}
 
 async function getProductData() {
     try {
@@ -19,7 +32,20 @@ async function getProductData() {
         return []; // Trả về mảng rỗng nếu có lỗi
     }
 }
+document.addEventListener('DOMContentLoaded', renderMenu);
 
+async function renderMenu() {
+    const categories = await fetchCategories();
+    const menuList = document.querySelector('.menu-list');
+    if (menuList && categories.length > 0) {
+        categories.forEach(category => {
+            const listItem = document.createElement('li');
+            listItem.classList.add('menu-list-item');
+            listItem.innerHTML = `<a href="javascript:;" class="menu-link" onclick="showCategory('${category._id}')">${category.name}</a>`;
+            menuList.appendChild(listItem);
+        });
+    }
+}
 
 // Doi sang dinh dang tien VND
 function vnd(price) {
@@ -179,10 +205,7 @@ async function addCart(index) {
         });
 
         if (response.ok) {
-            const userData = await response.json();
-            // Lưu thông tin người dùng vào sessionStorage
-            const currentuser = { cart: [] }; // Khởi tạo đối tượng người dùng mới
-            sessionStorage.setItem('currentuser', JSON.stringify(currentuser));
+            let currentuser = JSON.parse(sessionStorage.getItem('currentuser')) || { cart: [] };
 
             // Thêm sản phẩm vào giỏ hàng
             let quantity = document.querySelector('.input-qty').value;
@@ -200,10 +223,11 @@ async function addCart(index) {
             } else {
                 cart[vitri].quantity += parseInt(productcart.quantity);
             }
-            sessionStorage.setItem('currentuser', JSON.stringify({ cart }));
+
+            sessionStorage.setItem('currentuser', JSON.stringify(currentuser));
             updateAmount();
             closeModal();
-            // toast({ title: 'Success', message: 'Thêm thành công sản phẩm vào giỏ hàng', type: 'success', duration: 3000 });
+            toast({ title: 'Success', message: 'Thêm thành công sản phẩm vào giỏ hàng', type: 'success', duration: 3000 });
         } else {
             // Chưa đăng nhập, hiển thị thông báo cảnh báo
             toast({ title: 'Warning', message: 'Chưa đăng nhập tài khoản !', type: 'warning', duration: 3000 });
@@ -212,6 +236,7 @@ async function addCart(index) {
         console.error('Error checking authentication:', error.message);
     }
 }
+
 
 
 //Show gio hang
@@ -224,7 +249,7 @@ async function showCart() {
         let productcarthtml = '';
 
         for (const item of currentuser.cart) {
-            const product = await getProduct(item); // Sử dụng await để đợi hàm getProduct hoàn thành
+            const product = await getProduct(item.id); 
             if (product) {
                 productcarthtml += `<li class="cart-item" data-id="${product._id}">
                     <div class="cart-item-info">
@@ -307,14 +332,10 @@ async function getCartTotal() {
         let currentUser = JSON.parse(sessionStorage.getItem('currentuser'));
         let tongtien = 0;
         if (currentUser != null) {
-            // Tạo mảng các promise để lấy thông tin sản phẩm
-            let promises = currentUser.cart.map(item => getProduct(item));
-            // Chờ đợi tất cả các promise hoàn thành
-            let products = await Promise.all(promises);
-            // Tính tổng tiền
-            tongtien = products.reduce((total, product) => {
-                return total + parseInt(product.quantity) * parseInt(product.price);
-            }, 0);
+            for (let item of currentUser.cart) {
+                let product = await getProduct(item.id);
+                tongtien += parseInt(item.quantity) * parseInt(product.price);
+            }
         }
         return tongtien;
     } catch (error) {
@@ -327,7 +348,7 @@ async function getCartTotal() {
 // Get Product 
 async function getProduct(item) {
     const products = await getProductData();
-    let infoProductCart = products.find(sp => item.id === sp._id);
+    let infoProductCart = products.find(sp => item === sp._id);
     let product = {
         ...infoProductCart,
         ...item
@@ -371,7 +392,7 @@ function saveAmountCart() {
             });
             productId.quantity = parseInt(listProduct[parseInt(index / 2)].querySelector(".input-qty").value);
             sessionStorage.setItem('currentuser', JSON.stringify(currentUser));
-            saveAmountCart();
+            updateCartTotal();
         })
     });
 }
@@ -1296,8 +1317,7 @@ function paginationChange(page, productAll, currentPage) {
     return node;
 }
 
-// Hiển thị chuyên mục
-async function showCategory(category) {
+async function showCategory(categoryId) {
     try {
         // Lấy dữ liệu sản phẩm từ API
         const products = await getProductData();
@@ -1306,9 +1326,10 @@ async function showCategory(category) {
         document.getElementById('account-user').classList.remove('open');
         document.getElementById('order-history').classList.remove('open');
 
+        console.log(products);
         // Lọc các sản phẩm thuộc danh mục được chọn
         let productSearch = products.filter(value => {
-            return value.category.name.toString().toUpperCase().includes(category.toUpperCase());
+            return value.category._id === categoryId;
         });
 
         let currentPageSeach = 1;
@@ -1319,6 +1340,3 @@ async function showCategory(category) {
         console.error('Error showing category:', error.message);
     }
 }
-
-
-
