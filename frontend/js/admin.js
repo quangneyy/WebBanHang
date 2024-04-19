@@ -164,7 +164,8 @@ function showProductArr(arr) {
         productHtml = `<div class="no-result"><div class="no-result-i"><i class="fa-light fa-face-sad-cry"></i></div><div class="no-result-h">Không có sản phẩm để hiển thị</div></div>`;
     } else {
         arr.forEach(product => {
-            let btnCtl = product.published.length > 0 ? 
+            // Check if 'published' property exists and is not null or undefined
+            let btnCtl = product.published && product.published.length > 0 ? 
                 `<button class="btn-delete" onclick="deleteProduct('${product._id}')"><i class="fa-regular fa-trash"></i></button>` :
                 `<button class="btn-delete" onclick="changeStatusProduct('${product._id}')"><i class="fa-regular fa-eye"></i></button>`;
             productHtml += `
@@ -193,6 +194,7 @@ function showProductArr(arr) {
     }
     document.getElementById("show-product").innerHTML = productHtml;
 }
+
 
 
 function showProduct() {
@@ -340,13 +342,16 @@ function fetchCategories() {
         .then(response => response.json())
         .then(data => {
             // Xử lý phản hồi từ API và trích xuất danh sách các loại món ăn
-            let categories = data.map(category => category.name);
+            let categories = data.map(category => {
+                return { name: category.name, _id: category._id };
+            });
             // Đổ danh sách các loại món ăn vào dropdown menu chon-mon
             let selectElement = document.getElementById("chon-mon");
             selectElement.innerHTML = ""; // Xóa tất cả các mục hiện có trong dropdown trước khi thêm mới
             categories.forEach(category => {
                 let option = document.createElement("option"); 
-                option.text = category;
+                option.text = category.name;
+                option.value = category._id; // Gán _id của danh mục là giá trị của option
                 selectElement.add(option);
             });
         })
@@ -400,47 +405,65 @@ btnUpdateProductIn.addEventListener("click", (e) => {
 });
 
 let btnAddProductIn = document.getElementById("add-product-button");
-btnAddProductIn.addEventListener("click", (e) => {
+btnAddProductIn.addEventListener("click", async (e) => {
     e.preventDefault();
+
+    // Lấy các giá trị từ các trường nhập liệu
     let imgProduct = getPathImage(document.querySelector(".upload-image-preview").src);
     let tenMon = document.getElementById("ten-mon").value;
     let giaBan = document.getElementById("gia-moi").value;
     let moTa = document.getElementById("mo-ta").value;
     let danhMuc = document.getElementById("chon-mon").value;
-    let giaGiam = document.getElementById("gia-giam").value;
     let soLuong = document.getElementById("so-luong").value;
 
-    if (tenMon == "" || giaBan == "" || moTa == "" || giaGiam == "" || soLuong == "") {
+    // Validate input fields
+    if (tenMon === "" || giaBan === "" || moTa === "" || soLuong === "") {
         toast({ title: "Chú ý", message: "Vui lòng nhập đầy đủ thông tin sản phẩm!", type: "warning", duration: 3000 });
-    } else {
-        if (isNaN(giaBan) || isNaN(giaGiam) || isNaN(soLuong)) {
-            toast({ title: "Chú ý", message: "Giá bán, giá giảm và số lượng phải là số!", type: "warning", duration: 3000 });
-        } else {
-            let products = localStorage.getItem("products") ? JSON.parse(localStorage.getItem("products")) : [];
-            let product = {
-                _id: createId(products),
-                name: tenMon,
-                description: moTa,
-                category: danhMuc,
-                images: [{ url: imgProduct }],
-                isDeleted: false,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                __v: 0,
-                discountPrice: parseFloat(giaGiam),
-                price: parseFloat(giaBan),
-                quantity: parseInt(soLuong),
-                published: []
-            };
-            products.unshift(product);
-            localStorage.setItem("products", JSON.stringify(products));
-            showProduct();
-            document.querySelector(".add-product").classList.remove("open");
-            toast({ title: "Thành công", message: "Thêm sản phẩm thành công!", type: "success", duration: 3000 });
-            setDefaultValue();
+        return;
+    }
+
+    if (isNaN(giaBan) || isNaN(soLuong)) {
+        toast({ title: "Chú ý", message: "Giá bán và số lượng phải là số!", type: "warning", duration: 3000 });
+        return;
+    }
+
+    try {
+        // Tạo đối tượng sản phẩm
+        let bodyData = {
+            name: tenMon,
+            description: moTa,
+            category: danhMuc,
+            images: [{ url: imgProduct }], // Đưa imgProduct vào một mảng chứa một đối tượng với thuộc tính url
+            price: parseInt(giaBan),
+            quantity: parseInt(soLuong)
+        };
+
+        // Gửi yêu cầu POST tới API
+        const response = await fetch('http://localhost:3000/api/v1/products', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getToken()}` // Giả sử getToken() function trả về token ủy quyền
+            },
+            body: JSON.stringify(bodyData)
+        });
+
+        if (!response.ok) {
+            throw new Error('Có lỗi xảy ra khi thêm sản phẩm.');
         }
+
+        // Xử lý phản hồi
+        const data = await response.json();
+        console.log('Sản phẩm đã được thêm:', data);
+        toast({ title: "Thành công", message: "Thêm sản phẩm thành công!", type: "success", duration: 3000 });
+        setDefaultValue(); // Đặt lại giá trị mặc định cho các trường nhập liệu
+    } catch (error) {
+        console.error('Lỗi:', error);
+        // Xử lý lỗi (nếu cần)
     }
 });
+
+
 
 document.querySelector(".modal-close.product-form").addEventListener("click",() => {
     setDefaultValue();
@@ -459,14 +482,13 @@ let btnAddProduct = document.getElementById("btn-add-product");
 btnAddProduct.addEventListener("click", () => {
     document.querySelectorAll(".add-product-e").forEach(item => {
         item.style.display = "block";
-    })
+    });
     document.querySelectorAll(".edit-product-e").forEach(item => {
         item.style.display = "none";
-    })
+    });
     document.querySelector(".add-product").classList.add("open");
-    fetchCategories();
+    fetchCategories(); // Assuming this function fetches categories for select input
 });
-
 // Close Popup Modal
 let closePopup = document.querySelectorAll(".modal-close");
 let modalPopup = document.querySelectorAll(".modal");
@@ -478,10 +500,18 @@ for (let i = 0; i < closePopup.length; i++) {
 }
 
 // On change Image
-function uploadImage(el) {
-    let path = "./assets/img/products/" + el.value.split("\\")[2];
-    document.querySelector(".upload-image-preview").setAttribute("src", path);
+function uploadImage(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+
+        reader.onload = function (e) {
+            document.querySelector('.upload-image-preview').setAttribute('src', e.target.result);
+        }
+
+        reader.readAsDataURL(input.files[0]);
+    }
 }
+
 
 // Đổi trạng thái đơn hàng
 function changeStatus(id, el) {
@@ -544,7 +574,7 @@ function showOrder() {
             document.getElementById("showOrder").innerHTML = orderHtml;
         })
         .catch(error => {
-            console.error('There was a problem with the fetch operation:', error);
+
         });
 }
 
