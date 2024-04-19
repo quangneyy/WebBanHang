@@ -204,7 +204,7 @@ function showProduct() {
             }
             return response.json();
         })
-        .then(categories => {
+        .then(categories => { 
             // Hiển thị thể loại sản phẩm trong dropdown
             let selectOp = document.getElementById('the-loai');
             selectOp.innerHTML = ''; // Xóa các lựa chọn hiện có
@@ -307,25 +307,55 @@ function changeStatusProduct(id) {
 var indexCur;
 function editProduct(id) {
     let products = localStorage.getItem("products") ? JSON.parse(localStorage.getItem("products")) : [];
-    let index = products.findIndex(item => {
-        return item.id == id;
-    })
+    let index = products.findIndex(item => item.id == id);
     indexCur = index;
+
+    // Ẩn các phần tử thêm sản phẩm và hiển thị các phần tử chỉnh sửa sản phẩm
     document.querySelectorAll(".add-product-e").forEach(item => {
         item.style.display = "none";
-    })
+    });
     document.querySelectorAll(".edit-product-e").forEach(item => {
         item.style.display = "block";
-    })
+    });
     document.querySelector(".add-product").classList.add("open");
-    //
+
+    // Đặt các giá trị của sản phẩm vào các trường nhập liệu tương ứng
     document.querySelector(".upload-image-preview").src = products[index].img;
     document.getElementById("ten-mon").value = products[index].title;
     document.getElementById("gia-moi").value = products[index].price;
     document.getElementById("mo-ta").value = products[index].desc;
-    document.getElementById("chon-mon").value = products[index].category;
+
+    // Gọi hàm fetchCategories để lấy danh sách các loại món ăn và đổ vào dropdown menu chon-mon
+    fetchCategories()
+        .then(() => {
+            // Đặt giá trị của loại món ăn trong sản phẩm vào dropdown menu chon-mon
+            document.getElementById("chon-mon").value = products[index].category;
+        })
+        .catch(error => {
+            console.error('Error fetching categories:', error);
+        });
+}
+function fetchCategories() {
+    fetch('http://localhost:3000/api/v1/categories')
+        .then(response => response.json())
+        .then(data => {
+            // Xử lý phản hồi từ API và trích xuất danh sách các loại món ăn
+            let categories = data.map(category => category.name);
+            // Đổ danh sách các loại món ăn vào dropdown menu chon-mon
+            let selectElement = document.getElementById("chon-mon");
+            selectElement.innerHTML = ""; // Xóa tất cả các mục hiện có trong dropdown trước khi thêm mới
+            categories.forEach(category => {
+                let option = document.createElement("option"); 
+                option.text = category;
+                selectElement.add(option);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching categories:', error);
+        });
 }
 
+// Gọi hàm fetchCategories khi trang được tải
 function getPathImage(path) {
     let patharr = path.split("/");
     return "./assets/img/products/" + patharr[patharr.length - 1];
@@ -372,32 +402,41 @@ btnUpdateProductIn.addEventListener("click", (e) => {
 let btnAddProductIn = document.getElementById("add-product-button");
 btnAddProductIn.addEventListener("click", (e) => {
     e.preventDefault();
-    let imgProduct = getPathImage(document.querySelector(".upload-image-preview").src)
+    let imgProduct = getPathImage(document.querySelector(".upload-image-preview").src);
     let tenMon = document.getElementById("ten-mon").value;
-    let price = document.getElementById("gia-moi").value;
+    let giaBan = document.getElementById("gia-moi").value;
     let moTa = document.getElementById("mo-ta").value;
-    let categoryText = document.getElementById("chon-mon").value;
-    if(tenMon == "" || price == "" || moTa == "") {
-        toast({ title: "Chú ý", message: "Vui lòng nhập đầy đủ thông tin món!", type: "warning", duration: 3000, });
+    let danhMuc = document.getElementById("chon-mon").value;
+    let giaGiam = document.getElementById("gia-giam").value;
+    let soLuong = document.getElementById("so-luong").value;
+
+    if (tenMon == "" || giaBan == "" || moTa == "" || giaGiam == "" || soLuong == "") {
+        toast({ title: "Chú ý", message: "Vui lòng nhập đầy đủ thông tin sản phẩm!", type: "warning", duration: 3000 });
     } else {
-        if(isNaN(price)) {
-            toast({ title: "Chú ý", message: "Giá phải ở dạng số!", type: "warning", duration: 3000, });
+        if (isNaN(giaBan) || isNaN(giaGiam) || isNaN(soLuong)) {
+            toast({ title: "Chú ý", message: "Giá bán, giá giảm và số lượng phải là số!", type: "warning", duration: 3000 });
         } else {
             let products = localStorage.getItem("products") ? JSON.parse(localStorage.getItem("products")) : [];
             let product = {
-                id: createId(products),
-                title: tenMon,
-                img: imgProduct,
-                category: categoryText,
-                price: price,
-                desc: moTa,
-                status:1
+                _id: createId(products),
+                name: tenMon,
+                description: moTa,
+                category: danhMuc,
+                images: [{ url: imgProduct }],
+                isDeleted: false,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                __v: 0,
+                discountPrice: parseFloat(giaGiam),
+                price: parseFloat(giaBan),
+                quantity: parseInt(soLuong),
+                published: []
             };
             products.unshift(product);
             localStorage.setItem("products", JSON.stringify(products));
             showProduct();
             document.querySelector(".add-product").classList.remove("open");
-            toast({ title: "Success", message: "Thêm sản phẩm thành công!", type: "success", duration: 3000});
+            toast({ title: "Thành công", message: "Thêm sản phẩm thành công!", type: "success", duration: 3000 });
             setDefaultValue();
         }
     }
@@ -416,7 +455,7 @@ function setDefaultValue() {
 }
 
 // Open Popup Modal
-let btnAddProduct = document.getElementById("btn-add-product");
+let btnAddProduct = document.getElementById("btn-add-product"); 
 btnAddProduct.addEventListener("click", () => {
     document.querySelectorAll(".add-product-e").forEach(item => {
         item.style.display = "block";
@@ -425,6 +464,7 @@ btnAddProduct.addEventListener("click", () => {
         item.style.display = "none";
     })
     document.querySelector(".add-product").classList.add("open");
+    fetchCategories();
 });
 
 // Close Popup Modal
@@ -649,7 +689,46 @@ function cancelSearchOrder(){
     document.getElementById("time-end").value = "";
     showOrder(orders);
 }
+function showDiscount() {
+    console.log("đã chạy");
+    fetch('http://localhost:3000/api/v1/discountcodes')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+  
+            return response.json();
+        })
+        .then(data => {
+            let discountHtml = "<table><thead><tr><th>ID</th><th>Mã giảm giá</th><th>Phần trăm giảm giá</th><th>Ngày bắt đầu</th><th>Ngày kết thúc</th><th>Tình trạng</th><th>Ngày tạo</th><th>Ngày cập nhật</th></tr></thead><tbody>";
 
+            if (data.length === 0) {
+                discountHtml += `<tr><td colspan="8">Không có dữ liệu</td></tr>`;
+            } else {
+                data.forEach((item) => {
+                    let status = item.isActive ? `<span class="status-complete">Hoạt động</span>` : `<span class="status-no-complete">Không hoạt động</span>`;
+                    let startDate = formatDate(item.startDate);
+                    let expiryDate = formatDate(item.expiryDate);
+                    discountHtml += `
+                        <tr>
+                            <td>${item._id}</td>
+                            <td>${item.code}</td>
+                            <td>${item.discountPercentage}%</td>
+                            <td>${startDate}</td>
+                            <td>${expiryDate}</td>                               
+                            <td>${status}</td>
+                            <td>${formatDate(item.createdAt)}</td>
+                            <td>${formatDate(item.updatedAt)}</td>
+                        </tr>`;
+                });
+            }
+            discountHtml += "</tbody></table>";
+            document.getElementById("show-discount").innerHTML = discountHtml;
+        })
+        .catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
+        });
+}
 // Create Object Thong ke
 function createObj() {
     let orders = localStorage.getItem("order") ? JSON.parse(localStorage.getItem("order")) : [];
@@ -824,61 +903,93 @@ function signUpFormReset() {
 function showUserArr(arr) {
     let accountHtml = '';
     if(arr.length == 0) {
-        accountHtml = `<td colspan="5">Không có dữ liệu</td>`
+        accountHtml = `<tr><td colspan="6">Không có dữ liệu</td></tr>`;
     } else {
-        arr.forEach((account, index) => {
-            let tinhtrang = account.status == 0 ? `<span class="status-no-complete">Bị khóa</span>` : `<span class="status-complete">Hoạt động</span>`;
-            accountHtml += ` <tr>
-            <td>${index + 1}</td>
-            <td>${account.fullname}</td>
-            <td>${account.phone}</td>
-            <td>${formatDate(account.join)}</td>
-            <td>${tinhtrang}</td>
-            <td class="control control-table">
-            <button class="btn-edit" id="edit-account" onclick='editAccount(${account.phone})' ><i class="fa-light fa-pen-to-square"></i></button>
-            <button class="btn-delete" id="delete-account" onclick="deleteAcount(${index})"><i class="fa-regular fa-trash"></i></button>
-            </td>
-        </tr>`
-        })
+        arr.forEach((user, index) => {
+            let tinhtrang = user.status ? `<span class="status-complete">Hoạt động</span>` : `<span class="status-no-complete">Bị khóa</span>`;
+            accountHtml += ` 
+            <tr>
+                <td>${index + 1}</td>
+                <td>${user.username}</td>
+                <td>${user.email}</td>
+                <td>${user.phone}</td>
+                <td>${user.address}</td>
+                <td>${tinhtrang}</td>
+                <td>${formatDate(user.createdAt)}</td>
+                <td>${formatDate(user.updatedAt)}</td>
+                <td class="control control-table">
+                    <button class="btn-edit" id="edit-account" onclick='editAccount("${user._id}")'><i class="fa-light fa-pen-to-square"></i></button>
+                    <button class="btn-delete" id="delete-account" onclick='deleteAcount("${user._id}")'><i class="fa-regular fa-trash"></i></button>
+                </td>
+            </tr>`;
+        });
     }
     document.getElementById('show-user').innerHTML = accountHtml;
 }
 
-function showUser() {
-    let tinhTrang = parseInt(document.getElementById("tinh-trang-user").value);
-    let ct = document.getElementById("form-search-user").value;
-    let timeStart = document.getElementById("time-start-user").value;
-    let timeEnd = document.getElementById("time-end-user").value;
 
-    if (timeEnd < timeStart && timeEnd != "" && timeStart != "") {
-        alert("Lựa chọn thời gian sai !");
-        return;
+    async function showUser() {
+        try {
+            // Kiểm tra xem người dùng đã đăng nhập và có token không
+            const token = getToken();
+            if (!token) {
+                // Nếu không có token, chuyển hướng hoặc hiển thị thông báo yêu cầu đăng nhập
+                // Ví dụ:
+                window.location.href = '/login'; // Chuyển hướng đến trang đăng nhập
+                return;
+            }
+    
+            const response = await fetch('http://localhost:3000/api/v1/users', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+    
+            if (response.ok) {
+                const accounts = await response.json();
+                // Tiếp tục xử lý dữ liệu và hiển thị danh sách người dùng
+                let tinhTrang = parseInt(document.getElementById("tinh-trang-user").value);
+                let ct = document.getElementById("form-search-user").value;
+                let timeStart = document.getElementById("time-start-user").value;
+                let timeEnd = document.getElementById("time-end-user").value;
+    
+                if (timeEnd < timeStart && timeEnd != "" && timeStart != "") {
+                    alert("Lựa chọn thời gian sai !");
+                    return;
+                }
+    
+                let result = tinhTrang == 2 ? accounts : accounts.filter(item => item.status == tinhTrang);
+    
+                result = ct == "" ? result : result.filter((item) => {
+                    return (item.fullname.toLowerCase().includes(ct.toLowerCase()) || item.phone.toString().toLowerCase().includes(ct.toLowerCase()));
+                });
+    
+                if (timeStart != "" && timeEnd == "") {
+                    result = result.filter((item) => {
+                        return new Date(item.join) >= new Date(timeStart).setHours(0, 0, 0);
+                    });
+                } else if (timeStart == "" && timeEnd != "") {
+                    result = result.filter((item) => {
+                        return new Date(item.join) <= new Date(timeEnd).setHours(23, 59, 59);
+                    });
+                } else if (timeStart != "" && timeEnd != "") {
+                    result = result.filter((item) => {
+                        return (new Date(item.join) >= new Date(timeStart).setHours(0, 0, 0) && new Date(item.join) <= new Date(timeEnd).setHours(23, 59, 59)
+                        );
+                    });
+                }
+                showUserArr(result);
+            } else {
+                console.error('Error fetching user data:', response.statusText);
+                // Xử lý lỗi, ví dụ: hiển thị thông báo lỗi
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            // Xử lý lỗi, ví dụ: hiển thị thông báo lỗi
+        }
     }
-
-    let accounts = localStorage.getItem("accounts") ? JSON.parse(localStorage.getItem("accounts")).filter(item => item.userType == 0) : [];
-    let result = tinhTrang == 2 ? accounts : accounts.filter(item => item.status == tinhTrang);
-
-    result = ct == "" ? result : result.filter((item) => {
-        return (item.fullname.toLowerCase().includes(ct.toLowerCase()) || item.phone.toString().toLowerCase().includes(ct.toLowerCase()));
-    });
-
-    if (timeStart != "" && timeEnd == "") {
-        result = result.filter((item) => {
-            return new Date(item.join) >= new Date(timeStart).setHours(0, 0, 0);
-        });
-    } else if (timeStart == "" && timeEnd != "") {
-        result = result.filter((item) => {
-            return new Date(item.join) <= new Date(timeEnd).setHours(23, 59, 59);
-        });
-    } else if (timeStart != "" && timeEnd != "") {
-        result = result.filter((item) => {
-            return (new Date(item.join) >= new Date(timeStart).setHours(0, 0, 0) && new Date(item.join) <= new Date(timeEnd).setHours(23, 59, 59)
-            );
-        });
-    }
-    showUserArr(result);
-}
-
+    
+    
 function cancelSearchUser() {
     let accounts = localStorage.getItem("accounts") ? JSON.parse(localStorage.getItem("accounts")).filter(item => item.userType == 0) : [];
     showUserArr(accounts);
@@ -889,7 +1000,7 @@ function cancelSearchUser() {
 }
 
 window.onload = showUser();
-
+window.onload = showDiscount();
 function deleteAcount(phone) {
     let accounts = JSON.parse(localStorage.getItem('accounts'));
     let index = accounts.findIndex(item => item.phone == phone);

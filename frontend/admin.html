@@ -56,6 +56,12 @@
                     </li>
                     <li class="sidebar-list-item tab-content">
                         <a href="#" class="sidebar-link">
+                            <div class="sidebar-icon"><i class="fa-light fa-tags"></i></div>
+                            <div class="hidden-sidebar">Mã giảm giá</div>
+                        </a>
+                    </li>
+                    <li class="sidebar-list-item tab-content">
+                        <a href="#" class="sidebar-link">
                             <div class="sidebar-icon"><i class="fa-light fa-chart-simple"></i></div>
                             <div class="hidden-sidebar">Thống kê</div>
                         </a>
@@ -194,17 +200,21 @@
                         <thead>
                             <tr>
                                 <td>STT</td>
-                                <td>Họ và tên</td>
-                                <td>Liên hệ</td>
-                                <td>Ngày tham gia</td>
+                                <td>Tên Tài Khoản</td>
+                                <td>Gmail</td>
+                                <td>SĐT</td>
+                                <td>Địa chỉ</td>
                                 <td>Tình trạng</td>
-                                <td></td>
+                                <td>Ngày tạo</td>
+                                <td>Ngày cập nhật</td>
                             </tr>
                         </thead>
                         <tbody id="show-user">
+                            <!-- Dữ liệu người dùng sẽ được hiển thị ở đây -->
                         </tbody>
                     </table>
                 </div>
+                
                 <!-- </div> -->
             </div>
             <!-- Order  -->
@@ -254,6 +264,58 @@
                     </table>
                 </div>
             </div>
+            <!-- giảm giá  -->
+            <div class="section">
+                <div class="admin-control">
+                    <div class="admin-control-left">
+                        <select name="tinh-trang-user" id="tinh-trang-user" onchange="showDiscount()">
+                            <option value="2">Tất cả</option>
+                            <option value="1">Hoạt động</option>
+                            <option value="0">Không hoạt động</option>
+                        </select>
+                    </div>
+                    <div class="admin-control-center">
+                        <form action="" class="form-search">
+                            <span class="search-btn"><i class="fa-light fa-magnifying-glass"></i></span>
+                            <input id="form-search-discount" type="text" class="form-search-input" placeholder="Tìm kiếm mã giảm giá..." oninput="showDiscount()">
+                        </form>
+                    </div>
+                    <div class="admin-control-right">
+                        <form action="" class="fillter-date">
+                            <div>
+                                <label for="time-start">Từ</label>
+                                <input type="date" class="form-control-date" id="time-start-discount" onchange="showDiscount()">
+                            </div>
+                            <div>
+                                <label for="time-end">Đến</label>
+                                <input type="date" class="form-control-date" id="time-end-discount" onchange="showDiscount()">
+                            </div>
+                        </form>      
+                        <button class="btn-reset-order" onclick="cancelSearchDiscount()"><i class="fa-light fa-arrow-rotate-right"></i></button>     
+                        <button id="btn-add-discount" class="btn-control-large" onclick="openCreateDiscount()"><i class="fa-light fa-plus"></i> <span>Thêm mã giảm giá</span></button>          
+                    </div>
+                </div>
+                <div class="table">
+                    <table width="100%">
+                        <thead>
+                            <tr>
+                                <td>STT</td>
+                                <td>Mã giảm giá</td>
+                                <td>Phần trăm giảm giá</td>
+                                <td>Ngày bắt đầu</td>
+                                <td>Ngày kết thúc</td>
+                                <td>Tình trạng</td>
+                                <td>Ngày tạo</td>
+                                <td>Ngày cập nhật</td>
+                            </tr>
+                        </thead>
+                        <tbody id="show-discount">
+                            <!-- Dữ liệu mã giảm giá sẽ được hiển thị ở đây -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
             <div class="section">
                 <div class="admin-control">
                     <div class="admin-control-left">
@@ -345,7 +407,7 @@
             <div class="modal-content">
                 <form action="" class="add-product-form">
                     <div class="modal-content-left">
-                        <img src="./assets/img/blank-image.png" alt="" class="upload-image-preview">
+                        <img src="./assets/img/products/nam-dui-ga-chay-toi.jpeg" alt="Bánh quy hạt lúa mạch" class="upload-image-preview">
                         <div class="form-group file">
                             <label for="up-hinh-anh" class="form-label-file"><i class="fa-regular fa-cloud-arrow-up"></i>Chọn hình ảnh</label>
                             <input accept="image/jpeg, image/png, image/jpg" id="up-hinh-anh" name="up-hinh-anh" type="file" class="form-control" onchange="uploadImage(this)">
@@ -354,31 +416,34 @@
                     <div class="modal-content-right">
                         <div class="form-group">
                             <label for="ten-mon" class="form-label">Tên món</label>
-                            <input id="ten-mon" name="ten-mon" type="text" placeholder="Nhập tên món"
-                                class="form-control">
+                            <input id="ten-mon" name="ten-mon" type="text" placeholder="Nhập tên món" class="form-control">
                             <span class="form-message"></span>
                         </div>
                         <div class="form-group">
-                            <label for="category" class="form-label">Chọn món</label>
-                            <select name="category" id="chon-mon">
-                                <option>Món chay</option>
-                                <option>Món mặn</option>
-                                <option>Món lẩu</option>
-                                <option>Món ăn vặt</option>
-                                <option>Món tráng miệng</option>
-                                <option>Nước uống</option>
+                            <label for="chon-mon" class="form-label">Danh mục</label>
+                            <select name="chon-mon" id="chon-mon" class="form-control">
+                                <!-- Các danh mục món ăn sẽ được thêm vào đây bằng JavaScript -->
                             </select>
                             <span class="form-message"></span>
                         </div>
                         <div class="form-group">
                             <label for="gia-moi" class="form-label">Giá bán</label>
-                            <input id="gia-moi" name="gia-moi" type="text" placeholder="Nhập giá bán"
-                                class="form-control">
+                            <input id="gia-moi" name="gia-moi" type="text" placeholder="Nhập giá bán" class="form-control">
                             <span class="form-message"></span>
                         </div>
                         <div class="form-group">
                             <label for="mo-ta" class="form-label">Mô tả</label>
                             <textarea class="product-desc" id="mo-ta" placeholder="Nhập mô tả món ăn..."></textarea>
+                            <span class="form-message"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="gia-giam" class="form-label">Giá giảm (nếu có)</label>
+                            <input id="gia-giam" name="gia-giam" type="text" placeholder="Nhập giá giảm" class="form-control">
+                            <span class="form-message"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="so-luong" class="form-label">Số lượng</label>
+                            <input id="so-luong" name="so-luong" type="number" placeholder="Nhập số lượng" class="form-control">
                             <span class="form-message"></span>
                         </div>
                         <button class="form-submit btn-add-product-form add-product-e" id="add-product-button">
@@ -389,7 +454,7 @@
                             <i class="fa-light fa-pencil"></i>
                             <span>LƯU THAY ĐỔI</span>
                         </button>
-                    </div>
+                    </div>                    
                 </form>
             </div>
             </form>
