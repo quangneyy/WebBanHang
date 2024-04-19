@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -144,12 +145,15 @@
                     <div class="admin-control-center">
                         <form action="" class="form-search">
                             <span class="search-btn"><i class="fa-light fa-magnifying-glass"></i></span>
-                            <input id="form-search-product" type="text" class="form-search-input" placeholder="Tìm kiếm tên món..." oninput="showProduct()">
+                            <input id="form-search-product" type="text" class="form-search-input"
+                                placeholder="Tìm kiếm tên món..." oninput="showProduct()">
                         </form>
                     </div>
                     <div class="admin-control-right">
-                        <button class="btn-control-large" id="btn-cancel-product" onclick="cancelSearchProduct()"><i class="fa-light fa-rotate-right"></i> Làm mới</button>
-                        <button class="btn-control-large" id="btn-add-product"><i class="fa-light fa-plus"></i> Thêm món mới</button>                  
+                        <button class="btn-control-large" id="btn-cancel-product" onclick="cancelSearchProduct()"><i
+                                class="fa-light fa-rotate-right"></i> Làm mới</button>
+                        <button class="btn-control-large" id="btn-add-product"><i class="fa-light fa-plus"></i> Thêm món
+                            mới</button>
                     </div>
                 </div>
                 <div id="show-product"></div>
@@ -171,7 +175,8 @@
                     <div class="admin-control-center">
                         <form action="" class="form-search">
                             <span class="search-btn"><i class="fa-light fa-magnifying-glass"></i></span>
-                            <input id="form-search-user" type="text" class="form-search-input" placeholder="Tìm kiếm khách hàng..." oninput="showUser()">
+                            <input id="form-search-user" type="text" class="form-search-input"
+                                placeholder="Tìm kiếm khách hàng..." oninput="showUser()">
                         </form>
                     </div>
                     <div class="admin-control-right">
@@ -184,9 +189,11 @@
                                 <label for="time-end">Đến</label>
                                 <input type="date" class="form-control-date" id="time-end-user" onchange="showUser()">
                             </div>
-                        </form>      
-                        <button class="btn-reset-order" onclick="cancelSearchUser()"><i class="fa-light fa-arrow-rotate-right"></i></button>     
-                        <button id="btn-add-user" class="btn-control-large" onclick="openCreateAccount()"><i class="fa-light fa-plus"></i> <span>Thêm khách hàng</span></button>          
+                        </form>
+                        <button class="btn-reset-order" onclick="cancelSearchUser()"><i
+                                class="fa-light fa-arrow-rotate-right"></i></button>
+                        <button id="btn-add-user" class="btn-control-large" onclick="openCreateAccount()"><i
+                                class="fa-light fa-plus"></i> <span>Thêm khách hàng</span></button>
                     </div>
                 </div>
                 <div class="table">
@@ -220,7 +227,8 @@
                     <div class="admin-control-center">
                         <form action="" class="form-search">
                             <span class="search-btn"><i class="fa-light fa-magnifying-glass"></i></span>
-                            <input id="form-search-order" type="text" class="form-search-input" placeholder="Tìm kiếm mã đơn, khách hàng..." oninput="findOrder()">
+                            <input id="form-search-order" type="text" class="form-search-input"
+                                placeholder="Tìm kiếm mã đơn, khách hàng..." oninput="findOrder()">
                         </form>
                     </div>
                     <div class="admin-control-right">
@@ -233,8 +241,9 @@
                                 <label for="time-end">Đến</label>
                                 <input type="date" class="form-control-date" id="time-end" onchange="findOrder()">
                             </div>
-                        </form>      
-                        <button class="btn-reset-order" onclick="cancelSearchOrder()"><i class="fa-light fa-arrow-rotate-right"></i></button>               
+                        </form>
+                        <button class="btn-reset-order" onclick="cancelSearchOrder()"><i
+                                class="fa-light fa-arrow-rotate-right"></i></button>
                     </div>
                 </div>
                 <div class="table">
@@ -271,7 +280,8 @@
                     <div class="admin-control-center">
                         <form action="" class="form-search">
                             <span class="search-btn"><i class="fa-light fa-magnifying-glass"></i></span>
-                            <input id="form-search-tk" type="text" class="form-search-input" placeholder="Tìm kiếm tên món..." oninput="thongKe()">
+                            <input id="form-search-tk" type="text" class="form-search-input"
+                                placeholder="Tìm kiếm tên món..." oninput="thongKe()">
                         </form>
                     </div>
                     <div class="admin-control-right">
@@ -284,10 +294,13 @@
                                 <label for="time-end">Đến</label>
                                 <input type="date" class="form-control-date" id="time-end-tk" onchange="thongKe()">
                             </div>
-                        </form> 
-                        <button class="btn-reset-order" onclick="thongKe(1)"><i class="fa-regular fa-arrow-up-short-wide"></i></i></button>
-                        <button class="btn-reset-order" onclick="thongKe(2)"><i class="fa-regular fa-arrow-down-wide-short"></i></button>
-                        <button class="btn-reset-order" onclick="thongKe(0)"><i class="fa-light fa-arrow-rotate-right"></i></button>                    
+                        </form>
+                        <button class="btn-reset-order" onclick="thongKe(1)"><i
+                                class="fa-regular fa-arrow-up-short-wide"></i></i></button>
+                        <button class="btn-reset-order" onclick="thongKe(2)"><i
+                                class="fa-regular fa-arrow-down-wide-short"></i></button>
+                        <button class="btn-reset-order" onclick="thongKe(0)"><i
+                                class="fa-light fa-arrow-rotate-right"></i></button>
                     </div>
                 </div>
                 <div class="order-statistical" id="order-statistical">
@@ -345,10 +358,18 @@
             <div class="modal-content">
                 <form action="" class="add-product-form">
                     <div class="modal-content-left">
-                        <img src="./assets/img/blank-image.png" alt="" class="upload-image-preview">
-                        <div class="form-group file">
-                            <label for="up-hinh-anh" class="form-label-file"><i class="fa-regular fa-cloud-arrow-up"></i>Chọn hình ảnh</label>
-                            <input accept="image/jpeg, image/png, image/jpg" id="up-hinh-anh" name="up-hinh-anh" type="file" class="form-control" onchange="uploadImage(this)">
+                        <!-- <img src="./assets/img/blank-image.png" alt="" class="upload-image-preview"> -->
+                        <!-- <div class="form-group file">
+                            <label for="up-hinh-anh" class="form-label-file"><i
+                                    class="fa-regular fa-cloud-arrow-up"></i>Chọn hình ảnh</label>
+                            <input accept="image/jpeg, image/png, image/jpg" id="up-hinh-anh" name="up-hinh-anh"
+                                type="file" class="form-control" onchange="uploadImage(this)">
+                        </div> -->
+                        <div class="form-group">
+                            <label for="ten-mon" class="form-label">Link Ảnh</label>
+                            <input id="ten-mon" name="ten-mon" type="text" placeholder="Nhập tên món"
+                                class="form-control">
+                            <span class="form-message"></span>
                         </div>
                     </div>
                     <div class="modal-content-right">
@@ -401,7 +422,7 @@
             <button class="modal-close"><i class="fa-regular fa-xmark"></i></button>
             <div class="modal-detail-order">
             </div>
-            <div class="modal-detail-bottom">               
+            <div class="modal-detail-bottom">
             </div>
             </form>
         </div>
@@ -435,26 +456,30 @@
                 <form action="" class="signup-form">
                     <div class="form-group">
                         <label for="fullname" class="form-label">Tên đầy đủ</label>
-                        <input id="fullname" name="fullname" type="text" placeholder="VD: Nhật Sinh" class="form-control">
+                        <input id="fullname" name="fullname" type="text" placeholder="VD: Nhật Sinh"
+                            class="form-control">
                         <span class="form-message-name form-message"></span>
                     </div>
                     <div class="form-group">
                         <label for="phone" class="form-label">Số điện thoại</label>
-                        <input id="phone" name="phone" type="text" placeholder="Nhập số điện thoại" class="form-control">
+                        <input id="phone" name="phone" type="text" placeholder="Nhập số điện thoại"
+                            class="form-control">
                         <span class="form-message-phone form-message"></span>
                     </div>
                     <div class="form-group">
                         <label for="password" class="form-label">Mật khẩu</label>
-                        <input id="password" name="password" type="text" placeholder="Nhập mật khẩu" class="form-control">
+                        <input id="password" name="password" type="text" placeholder="Nhập mật khẩu"
+                            class="form-control">
                         <span class="form-message-password form-message"></span>
-                    </div>   
+                    </div>
                     <div class="form-group edit-account-e">
                         <label for="" class="form-label">Trạng thái</label>
                         <input type="checkbox" id="user-status" class="switch-input">
                         <label for="user-status" class="switch"></label>
                     </div>
                     <button class="form-submit add-account-e" id="signup-button">Đăng ký</button>
-                    <button class="form-submit edit-account-e" id="btn-update-account"><i class="fa-regular fa-floppy-disk"></i> Lưu thông tin</button>
+                    <button class="form-submit edit-account-e" id="btn-update-account"><i
+                            class="fa-regular fa-floppy-disk"></i> Lưu thông tin</button>
                 </form>
             </div>
         </div>
@@ -464,4 +489,5 @@
     <script src="./js/admin.js"></script>
     <script src="./js/toast-message.js"></script>
 </body>
+
 </html>

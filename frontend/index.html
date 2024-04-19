@@ -10,8 +10,9 @@
     <link rel="stylesheet" href="./assets/css/main.css">
     <link rel="stylesheet" href="./assets/css/home-responsive.css">
     <link rel="stylesheet" href="./assets/css/toast-message.css">
-    <link rel="stylesheet" href="./assets/font/font-awesome-pro-v6-6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="./assets/font/font-awesome-pro-v6-6.2.0/css/all.min.css" />
 </head>
+
 <body>
     <header>
         <div class="header-top">
@@ -67,8 +68,10 @@
                                 <span class="text-tk">Tài khoản <i class="fa-sharp fa-solid fa-caret-down"></i></span>
                             </div>
                             <ul class="header-middle-right-menu">
-                                <li><a id="login" href="javascript:;"><i class="fa-light fa-right-to-bracket"></i> Đăng nhập</a></li>
-                                <li><a id="signup" href="javascript:;"><i class="fa-light fa-user-plus"></i> Đăng ký</a></li>
+                                <li><a id="login" href="javascript:;"><i class="fa-light fa-right-to-bracket"></i> Đăng
+                                        nhập</a></li>
+                                <li><a id="signup" href="javascript:;"><i class="fa-light fa-user-plus"></i> Đăng ký</a>
+                                </li>
                             </ul>
                         </li>
                         <li class="header-middle-right-item open" onclick="openCart()">
@@ -119,9 +122,12 @@
                 <button id="advanced-search-price-btn"><i class="fa-light fa-magnifying-glass-dollar"></i></button>
             </div>
             <div class="advanced-search-control">
-                <button id="sort-ascending" onclick="searchProducts(1)"><i class="fa-regular fa-arrow-up-short-wide"></i></button>
-                <button id="sort-descending" onclick="searchProducts(2)"><i class="fa-regular fa-arrow-down-wide-short"></i></button>
-                <button id="reset-search" onclick="searchProducts(0)"><i class="fa-light fa-arrow-rotate-right"></i></button>
+                <button id="sort-ascending" onclick="searchProducts(1)"><i
+                        class="fa-regular fa-arrow-up-short-wide"></i></button>
+                <button id="sort-descending" onclick="searchProducts(2)"><i
+                        class="fa-regular fa-arrow-down-wide-short"></i></button>
+                <button id="reset-search" onclick="searchProducts(0)"><i
+                        class="fa-light fa-arrow-rotate-right"></i></button>
                 <button onclick="closeSearchAdvanced()"><i class="fa-light fa-xmark"></i></button>
             </div>
         </div>
@@ -194,11 +200,13 @@
                         <form action="" class="info-user">
                             <div class="form-group">
                                 <label for="infousername" class="form-label">Tên tài khoản</label>
-                                <input class="form-control" type="text" name="infousername" id="infousername" disabled="true">
+                                <input class="form-control" type="text" name="infousername" id="infousername"
+                                    disabled="true">
                             </div>
                             <div class="form-group">
                                 <label for="infophone" class="form-label">Số điện thoại</label>
-                                <input class="form-control" type="text" name="infophone" id="infophone"  placeholder="Thêm số điện thoại của bạn">
+                                <input class="form-control" type="text" name="infophone" id="infophone"
+                                    placeholder="Thêm số điện thoại của bạn">
                                 <span class="inforphone-error form-message"></span>
                             </div>
                             <div class="form-group">
@@ -238,7 +246,7 @@
                     <div class="main-account-body-row">
                         <div>
                             <button id="save-info-user" onclick="changeInformation()"><i
-                                class="fa-regular fa-floppy-disk"></i> Lưu thay đổi</button>
+                                    class="fa-regular fa-floppy-disk"></i> Lưu thay đổi</button>
                         </div>
                         <div>
                             <button id="save-password" onclick="changePassword()"><i class="fa-regular fa-key"></i> Đổi
@@ -286,8 +294,7 @@
                         </div>
                         <div class="form-group">
                             <label for="email" class="form-label">Email</label>
-                            <input id="email" name="email" type="email" placeholder="Nhập email"
-                                class="form-control">
+                            <input id="email" name="email" type="email" placeholder="Nhập email" class="form-control">
                             <span class="form-message-email form-message"></span>
                         </div>
                         <div class="form-group">
@@ -418,7 +425,8 @@
                     <div class="widget-row-col-1">
                         <h3 class="widget-title">Về chúng tôi</h3>
                         <div class="widget-row-col-content">
-                            <p>Vy Food là thương hiệu được thành lập vào năm 2022 với tiêu chí đặt chất lượng sản phẩm lên hàng đầu.</p>
+                            <p>Vy Food là thương hiệu được thành lập vào năm 2022 với tiêu chí đặt chất lượng sản phẩm
+                                lên hàng đầu.</p>
                         </div>
                         <div class="widget-social">
                             <div class="widget-social-item">
@@ -706,4 +714,5 @@
     <script src="./js/checkout.js"></script>
     <script src="./js/toast-message.js"></script>
 </body>
+
 </html>
