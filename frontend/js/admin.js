@@ -367,42 +367,62 @@ function getPathImage(path) {
 }
 
 let btnUpdateProductIn = document.getElementById("update-product-button");
-btnUpdateProductIn.addEventListener("click", (e) => {
+btnUpdateProductIn.addEventListener("click", async (e) => {
     e.preventDefault();
-    let products = JSON.parse(localStorage.getItem("products"));
-    let idProduct = products[indexCur].id;
-    let imgProduct = products[indexCur].img;
-    let titleProduct = products[indexCur].title;
-    let curProduct = products[indexCur].price;
-    let descProduct = products[indexCur].desc;
-    let categoryProduct = products[indexCur].category;
-    let imgProductCur = getPathImage(document.querySelector(".upload-image-preview").src)
+
+    // Get the values from input fields
+    let imgProductCur = getPathImage(document.querySelector(".upload-image-preview").src);
     let titleProductCur = document.getElementById("ten-mon").value;
     let curProductCur = document.getElementById("gia-moi").value;
     let descProductCur = document.getElementById("mo-ta").value;
     let categoryText = document.getElementById("chon-mon").value;
 
-    if (imgProductCur != imgProduct || titleProductCur != titleProduct || curProductCur != curProduct || descProductCur != descProduct || categoryText != categoryProduct) {
-        let productadd = {
-            id: idProduct,
+    // Validate input fields
+    if (titleProductCur === "" || curProductCur === "" || descProductCur === "") {
+        toast({ title: "Chú ý", message: "Vui lòng nhập đầy đủ thông tin sản phẩm!", type: "warning", duration: 3000 });
+        return;
+    }
+
+    if (isNaN(curProductCur)) {
+        toast({ title: "Chú ý", message: "Giá bán phải là số!", type: "warning", duration: 3000 });
+        return;
+    }
+
+    try {
+        // Create product object
+        let bodyData = {
             title: titleProductCur,
-            img: imgProductCur,
+            description: descProductCur,
             category: categoryText,
-            price: parseInt(curProductCur),
-            desc: descProductCur,
-            status: 1,
+            img: imgProductCur,
+            price: parseInt(curProductCur)
         };
-        products.splice(indexCur, 1);
-        products.splice(indexCur, 0, productadd);
-        localStorage.setItem("products", JSON.stringify(products));
-        toast({ title: "Success", message: "Sửa sản phẩm thành công!", type: "success", duration: 3000, });
-        setDefaultValue();
-        document.querySelector(".add-product").classList.remove("open");
-        showProduct();
-    } else {
-        toast({ title: "Warning", message: "Sản phẩm của bạn không thay đổi!", type: "warning", duration: 3000, });
+
+        // Send PUT request to API
+        const response = await fetch(`http://localhost:3000/api/v1/products/${productId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getToken()}`
+            },
+            body: JSON.stringify(bodyData)
+        });
+
+        if (!response.ok) {
+            throw new Error('Có lỗi xảy ra khi cập nhật sản phẩm.');
+        }
+
+        // Process response
+        const data = await response.json();
+        console.log('Sản phẩm đã được cập nhật:', data);
+        toast({ title: "Thành công", message: "Cập nhật sản phẩm thành công!", type: "success", duration: 3000 });
+        setDefaultValue(); // Reset input fields
+    } catch (error) {
+        console.error('Lỗi:', error);
+        // Handle error (if needed)
     }
 });
+
 
 let btnAddProductIn = document.getElementById("add-product-button");
 btnAddProductIn.addEventListener("click", async (e) => {
@@ -502,16 +522,32 @@ for (let i = 0; i < closePopup.length; i++) {
 // On change Image
 function uploadImage(input) {
     if (input.files && input.files[0]) {
+        var formData = new FormData();
+        formData.append('image', input.files[0]);
+
+        // Perform an AJAX request to save the image
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/save-image', true); // Replace '/save-image' with your server endpoint
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                console.log('Image uploaded successfully.');
+            } else {
+                console.error('Error uploading image:', xhr.statusText);
+            }
+        };
+        xhr.onerror = function() {
+            console.error('Error uploading image:', xhr.statusText);
+        };
+        xhr.send(formData);
+        
+        // Display the uploaded image preview
         var reader = new FileReader();
-
-        reader.onload = function (e) {
+        reader.onload = function(e) {
             document.querySelector('.upload-image-preview').setAttribute('src', e.target.result);
-        }
-
+        };
         reader.readAsDataURL(input.files[0]);
     }
 }
-
 
 // Đổi trạng thái đơn hàng
 function changeStatus(id, el) {
@@ -1109,35 +1145,40 @@ addAccount.addEventListener("click", (e) => {
     let fullNameUser = document.getElementById('fullname').value;
     let phoneUser = document.getElementById('phone').value;
     let passwordUser = document.getElementById('password').value;
-        // Check validate
-        let fullNameIP = document.getElementById('fullname');
-        let formMessageName = document.querySelector('.form-message-name');
-        let formMessagePhone = document.querySelector('.form-message-phone');
-        let formMessagePassword = document.querySelector('.form-message-password');
     
-        if (fullNameUser.length == 0) {
-            formMessageName.innerHTML = 'Vui lòng nhập họ vâ tên';
-            fullNameIP.focus();
-        } else if (fullNameUser.length < 3) {
-            fullNameIP.value = '';
-            formMessageName.innerHTML = 'Vui lòng nhập họ và tên lớn hơn 3 kí tự';
-        }
-        
-        if (phoneUser.length == 0) {
-            formMessagePhone.innerHTML = 'Vui lòng nhập vào số điện thoại';
-        } else if (phoneUser.length != 10) {
-            formMessagePhone.innerHTML = 'Vui lòng nhập vào số điện thoại 10 số';
-            document.getElementById('phone').value = '';
-        }
-        
-        if (passwordUser.length == 0) {
-            formMessagePassword.innerHTML = 'Vui lòng nhập mật khẩu';
-        } else if (passwordUser.length < 6) {
-            formMessagePassword.innerHTML = 'Vui lòng nhập mật khẩu lớn hơn 6 kí tự';
-            document.getElementById('password').value = '';
-        }
+    // Check validate
+    let fullNameIP = document.getElementById('fullname');
+    let formMessageName = document.querySelector('.form-message-name');
+    let formMessagePhone = document.querySelector('.form-message-phone');
+    let formMessagePassword = document.querySelector('.form-message-password');
 
-    if (fullNameUser && phoneUser && passwordUser) {
+    formMessageName.innerHTML = '';
+    formMessagePhone.innerHTML = '';
+    formMessagePassword.innerHTML = '';
+
+    if (fullNameUser.length === 0) {
+        formMessageName.innerHTML = 'Vui lòng nhập họ và tên';
+        fullNameIP.focus();
+    } else if (fullNameUser.length < 3) {
+        fullNameIP.value = '';
+        formMessageName.innerHTML = 'Vui lòng nhập họ và tên lớn hơn 3 kí tự';
+    }
+    
+    if (phoneUser.length === 0) {
+        formMessagePhone.innerHTML = 'Vui lòng nhập số điện thoại';
+    } else if (phoneUser.length !== 10) {
+        formMessagePhone.innerHTML = 'Vui lòng nhập số điện thoại 10 số';
+        document.getElementById('phone').value = '';
+    }
+    
+    if (passwordUser.length === 0) {
+        formMessagePassword.innerHTML = 'Vui lòng nhập mật khẩu';
+    } else if (passwordUser.length < 6) {
+        formMessagePassword.innerHTML = 'Vui lòng nhập mật khẩu lớn hơn 6 kí tự';
+        document.getElementById('password').value = '';
+    }
+
+    if (fullNameUser && phoneUser && passwordUser && formMessageName.innerHTML === '' && formMessagePhone.innerHTML === '' && formMessagePassword.innerHTML === '') {
         let user = {
             fullname: fullNameUser,
             phone: phoneUser,
@@ -1148,24 +1189,27 @@ addAccount.addEventListener("click", (e) => {
             join: new Date(),
             cart: [],
             userType: 0
-        }
+        };
+
         console.log(user);
         let accounts = localStorage.getItem('accounts') ? JSON.parse(localStorage.getItem('accounts')) : [];
         let checkloop = accounts.some(account => {
             return account.phone == user.phone;
-        })
+        });
+
         if (!checkloop) {
             accounts.push(user);
             localStorage.setItem('accounts', JSON.stringify(accounts));
-            toast({ title: 'Thành công', message: 'Tạo thành công tài khoản !', type: 'success', duration: 3000 });
+            toast({ title: 'Thành công', message: 'Tạo thành công tài khoản!', type: 'success', duration: 3000 });
             document.querySelector(".signup").classList.remove("open");
             showUser();
             signUpFormReset();
         } else {
-            toast({ title: 'Cảnh báo !', message: 'Tài khoản đã tồn tại !', type: 'error', duration: 3000 });
+            toast({ title: 'Cảnh báo!', message: 'Tài khoản đã tồn tại!', type: 'error', duration: 3000 });
         }
     }
-})
+});
+
 
 document.getElementById("logout-acc").addEventListener('click', (e) => {
     e.preventDefault();
